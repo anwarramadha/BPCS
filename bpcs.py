@@ -7,6 +7,10 @@ import sys
 from PIL import Image
 import readline
 readline.parse_and_bind("tab: complete")
+global chessBoard, threshold, maxChange
+chessBoard = [i % 2 for i in xrange(64)]
+threshold = 0.3
+maxChange = 112
 
 # kelas untuk menampung bitplane
 # untuk mempermudah perhitungan kompleksitas, pbc->cgc
@@ -14,17 +18,18 @@ class Bitplane:
 	def __init__(self):
 		self.bits = []
 		self.complexity = 0
-		self.maxChange = 112
 
 	def fillBits(self, bit, bitPlaneNumber):
-		self.bits.append(bit[7-bitPlaneNumber])
+		self.bits.append(int(bit[7-bitPlaneNumber]))
 
 	def convertPBCCGC(self):
 		i = 1
-		converted =[int(self.bits[0])]
+		# print(self.bits)
+		converted = [self.bits[0]]
 		while i < len(self.bits):
-			converted.append(int(self.bits[i-1]) ^ int(self.bits[i]))
+			converted.append(self.bits[i-1] ^ self.bits[i])
 			i+=1
+
 		self.bits = converted
 
 	def calculateComplexity(self):
@@ -38,16 +43,25 @@ class Bitplane:
 			elif i > 55:
 				change += abs(self.bits[i]-self.bits[i-1])
 			i+=1
-		# print(change)
-		self.complexity = float(float(change)/float(self.maxChange))
+
+		self.complexity = float(change)/float(maxChange)
+
+	def conjugateBitplane(self):
+		i = 0
+		while i < len(self.bits):
+			self.bits[i] ^= chessBoard[i]
+			i+=1
 
 class BPCS :
 
-	def __init__(self, imagePath):
+	def __init__(self, imagePath, filename):
 		self.imagePath = imagePath
 		self.image = Image.open(self.imagePath)
 		self.blocks = []
 		self.bitPlanes = []
+		self.fileMsgName = filename
+		self.msgBlocks = []
+		self.notAllowed = []
 
 	def defineBlockSize(self):
 		self.width, self.height = self.image.size
@@ -86,8 +100,10 @@ class BPCS :
 					else: # gambar berwarna
 						bits.append([bin(x)[2:].zfill(8) for x in px[i-1,j-1]])
 				else:
-					bits.append((256, 256, 256)) # diisi dengan value yang sama agar kompleksitas rendah,
-													# sehingga tidak dapat dijadikan tempat penyimpanan pesan
+					exc =  bin(256)[2:].zfill(8)
+					bits.append((exc, exc, exc)) 
+					if idx not in self.notAllowed:
+						self.notAllowed.append(idx)
 
 				if j % 8 == 0 or (j > self.height and len(bits) == 8):
 
@@ -103,6 +119,15 @@ class BPCS :
 			idx = limit
 			i+=1
 
+	def initializeBlock(self, blocksize):
+		# buat tempatnya bloknya dulu
+		i = 0
+		blocks = []
+		while i < blocksize :
+			blocks.append([])
+			i+=1
+		return blocks
+
 	def dividePixels(self):
 
 		i = 0 
@@ -110,10 +135,7 @@ class BPCS :
 		#jumlah blok
 		blockSize = self.defineBlockSize()
 
-		# buat tempatnya bloknya dulu
-		while i < blockSize :
-			self.blocks.append([])
-			i+=1
+		self.blocks = self.initializeBlock(blockSize)
 
 		self.dividingPixel()
 
@@ -128,8 +150,7 @@ class BPCS :
 			self.blocks[i] = colorList
 			i += 1
 
-	def createBitplanes(self): # not working WTF!
-		bitplane = Bitplane()
+	def createBitplanes(self): 
 
 		for block in self.blocks:
 			i = 0
@@ -139,28 +160,105 @@ class BPCS :
 				bitplaneForEachColor = []
 				while j < 8: # 8 bit dari setiap warna pada rgb
 					k = 0
+					bitplane = Bitplane()
 					while k < 64: # 64 jumlah kelompok warna
-						# print(block[k][i])
+
 						bitplane.fillBits(block[k][i], j)
 						k += 1
 					j += 1
+
 					# ubah dari PBC ke CGC
 					bitplane.convertPBCCGC()
 					bitplane.calculateComplexity()
 					bitplaneForEachColor.append(bitplane)
-					bitplane.bits  = []
-
+					# bitplane.bits  = []
+				bitplaneForAllColor.append(bitplaneForEachColor)
+			
 				i+=1
-				bitplaneForAllColor.append(bitplaneForEachColor) # list dari bitplane semua warna, len = 1 untuk grayscale, 3 untuk rgb
-			self.bitPlanes.append(bitplaneForAllColor)
+			self.bitPlanes.append(bitplaneForAllColor) # list dari bitplane semua warna, len = 1 untuk grayscale, 3 untuk rgb
+
+	def defineMsgLen(self):
+		if self.msglen % 8 == 0:
+			return self.msglen
+		else:
+			return self.msglen + (8 - self.msglen % 8) + 1
+
+	def divideMessage(self):
+		file = open(self.fileMsgName, 'r')
+		self.message = file.read()
+		file.close()
+
+		blockSize = len(self.message) / 8 + int(len(self.message) % 8 > 0)
+		self.msgBlocks = self.initializeBlock(blockSize)
+		self.msglen = len(self.message)
+		length = self.defineMsgLen()
+
+		i = 1
+		idx = 0
+		while i < length:
+			if i < len(self.message) + 1:
+				self.msgBlocks[idx].append(bin(ord(self.message[i-1]))[2:].zfill(8))
+			else:
+				self.msgBlocks[idx].append(bin(ord(' '))[2:].zfill(8))
+			if i % 8 == 0:
+				idx+=1
+			i+=1
+
+	def createMsgBitplane(self):
+		self.msgBitplanes = []
+
+		for block in self.msgBlocks:
+			i = 0
+			bitplane = Bitplane()
+			while i < 8: # 8 bit pada pesan
+				j = 0
+				while  j < 8: #jumlah bit pesan dalam 1 block
+					bitplane.fillBits(block[j], i)
+					j+=1
+				i+=1
+			bitplane.calculateComplexity()
+
+			if bitplane.complexity < threshold:
+				bitplane.conjugateBitplane()
+				bitplane.calculateComplexity()
+
+			self.msgBitplanes.append(bitplane)
+
+	def sequentialEmbedding(self):
+		# pass
+		msgBitplaneIdx = 0
+		idx = 0
+
+		for colors in self.bitPlanes:
+			if idx not in self.notAllowed:
+				for bitplanes in colors: # 1 for grayscale, 3 for rgb
+					i = 0
+					while i < len(bitplanes): 
+						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
+							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
+							msgBitplaneIdx += 1
+
+						if msgBitplaneIdx == len(self.msgBitplanes):
+							break
+
+						i+=1
+					if msgBitplaneIdx == len(self.msgBitplanes):
+						break
+			idx += 1
+
+	def createImage(self):
+		blocks = []
+		for block in self.bitPlanes:
+			pass
 
 
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
-	bpcs = BPCS(filename)
+	bpcs = BPCS(filename, 'example.txt')
 	bpcs.dividePixels()
-	# print(bpcs.blocks)
 	bpcs.createBitplanes()
-	# for c in bpcs.bitPlanes:
-	# 	for x in c:
-	# 		print(x.bits)
+	bpcs.divideMessage()
+	bpcs.createMsgBitplane()
+	bpcs.sequentialEmbedding()
+	bpcs.createImage()
+		# print(bpcs.msgBitplanes[0].bits)
