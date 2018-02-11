@@ -31,8 +31,9 @@ class Bitplane:
 			if i % 8 == 0:
 				converted.append(self.bits[i])
 			else:
-				converted.append(self.bits[i]^self.bits[i-1])
+				converted.append(self.bits[i-1]^self.bits[i])
 			i+=1
+
 		self.bits = converted
 		
 	def convertCGC2PBC(self):
@@ -44,6 +45,7 @@ class Bitplane:
 			else:
 				converted.append(self.bits[i]^self.pbc[i-1])
 			i+=1
+
 		self.bits = converted
 
 	def calculateComplexity(self):
@@ -96,7 +98,22 @@ class BPCS :
 
 		return col, row
 
-	def dividingPixel(self):
+
+	def initializeBlock(self, blocksize):
+		# buat tempatnya bloknya dulu
+		i = 0
+		blocks = []
+		while i < blocksize :
+			blocks.append([])
+			i+=1
+		return blocks
+
+	def dividePixels(self):
+		#jumlah blok
+		blockSize = self.defineBlockSize()
+
+		self.blocks = self.initializeBlock(blockSize)
+
 		i = 1
 		idx = 0
 		limit = 0
@@ -109,9 +126,9 @@ class BPCS :
 			while j < row:
 
 				if j < self.height + 1 and i < self.width + 1: # iterasi masih kurang dari jumlah pixel
-					if isinstance(px[i-1, j-1], int): # gambar grayscale
+					if self.mode == 'L': # gambar grayscale
 						bits.append([bin(px[i-1, j-1])[2:].zfill(8)])
-						# bits.append([px[i-1, j-1]])
+
 					else: # gambar berwarna
 						bits.append([bin(x)[2:].zfill(8) for x in px[i-1,j-1]])
 				else:
@@ -122,7 +139,7 @@ class BPCS :
 
 				if j % 8 == 0 or (j > self.height and len(bits) == 8):
 
-					self.blocks[idx].append(bits)
+					self.blocks[idx].extend(bits)
 					idx += 1
 					bits = []
 
@@ -133,38 +150,7 @@ class BPCS :
 
 			idx = limit
 			i+=1
-
-	def initializeBlock(self, blocksize):
-		# buat tempatnya bloknya dulu
-		i = 0
-		blocks = []
-		while i < blocksize :
-			blocks.append([])
-			i+=1
-		return blocks
-
-	def dividePixels(self):
-
-		i = 0 
-
-		#jumlah blok
-		blockSize = self.defineBlockSize()
-
-		self.blocks = self.initializeBlock(blockSize)
-
-		self.dividingPixel()
-
-		# ubah list langsung jadi 8x8
-		i = 0
-		while i < len(self.blocks):
-			colorList = []
-			for colors in self.blocks[i]:
-				for color in colors:
-					colorList.append(color)
-
-			self.blocks[i] = colorList
-			i += 1
-
+			
 	def createBitplanes(self): 
 
 		for block in self.blocks:
@@ -243,7 +229,7 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
-							
+
 							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
 							msgBitplaneIdx += 1
 
@@ -385,14 +371,9 @@ if __name__ == "__main__":
 	# bpcs.divideMessage()
 	# bpcs.createMsgBitplane()
 	# bpcs.sequentialEmbedding()
-	bpcs.sequentialExtracting()
-	bpcs.messageChain()
 	# bpcs.createImage()
-	# bpcs.dummy()
-	# bpcs.createBitplanes()
-	# bpcs.sequentialExtracting()
-	# bpcs.messageChain()
-
 
 	# bpcs.writeImage()	
 	
+	bpcs.sequentialExtracting()
+	bpcs.messageChain()
