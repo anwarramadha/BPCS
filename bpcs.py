@@ -17,12 +17,14 @@ maxChange = 112
 class Bitplane:
 	def __init__(self):
 		self.bits = []
+		self.pbc = []
 		self.complexity = 0
 
 	def fillBits(self, bit, bitPlaneNumber):
 		self.bits.append(int(bit[7-bitPlaneNumber]))
 
-	def convertPBCCGC(self):
+	def convertPBC2CGC(self):
+		self.pbc = self.bits
 		i = 0
 		converted = []
 		while i < len(self.bits):
@@ -33,6 +35,16 @@ class Bitplane:
 			i+=1
 		self.bits = converted
 		
+	def convertCGC2PBC(self):
+		i = 0
+		converted = []
+		while i < len(self.bits):
+			if i % 8 == 0:
+				converted.append(self.bits[i])
+			else:
+				converted.append(self.bits[i]^self.pbc[i-1])
+			i+=1
+		self.bits = converted
 
 	def calculateComplexity(self):
 		i = 0
@@ -171,7 +183,7 @@ class BPCS :
 					j += 1
 					# ubah dari PBC ke CGC
 					# print(bitplane.bits)
-					# bitplane.convertPBCCGC()
+					bitplane.convertPBC2CGC()
 					bitplane.calculateComplexity()
 					bitplaneForEachColor.append(bitplane)
 					# bitplane.bits  = []
@@ -252,15 +264,15 @@ class BPCS :
 			idx += 1
 
 	def createImage(self):
-		# blocks = []
-		# for block in self.bitPlanes:
-		# 	i = 0
-		# 	while i < len(block):
-		# 		j = 0
-		# 		while j<len(block[i]):
-		# 			# block[i][j].convertPBCCGC()
-		# 			j+=1
-		# 		i+=1
+		blocks = []
+		for block in self.bitPlanes:
+			i = 0
+			while i < len(block):
+				j = 0
+				while j<len(block[i]):
+					block[i][j].convertCGC2PBC()
+					j+=1
+				i+=1
 
 		# for block in self.bitPlanes:
 		# 	for b in block:
