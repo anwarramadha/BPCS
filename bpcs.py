@@ -177,16 +177,17 @@ class BPCS :
 					k = 0
 					bitplane = Bitplane()
 					while k < 64: # 64 jumlah kelompok warna
-						# print(block[k][i])
+
 						bitplane.fillBits(block[k][i], j)
 						k += 1
 					j += 1
 					# ubah dari PBC ke CGC
-					# print(bitplane.bits)
-					bitplane.convertPBC2CGC()
+
+					# bitplane.convertPBC2CGC()
 					bitplane.calculateComplexity()
+
 					bitplaneForEachColor.append(bitplane)
-					# bitplane.bits  = []
+
 				bitplaneForAllColor.append(bitplaneForEachColor)
 			
 				i+=1
@@ -225,18 +226,10 @@ class BPCS :
 		for block in self.msgBlocks:
 			i = 0
 			bitplane = Bitplane()
-			while i < 8: # 8 bit pada pesan
-				j = 0
-				while  j < 8: #jumlah bit pesan dalam 1 block
-					bitplane.fillBits(block[j], i)
-					j+=1
-				i+=1
+			for bits in block:
+				for bit in bits:
+					bitplane.bits.append(int(bit))
 			bitplane.calculateComplexity()
-
-			if bitplane.complexity < threshold:
-				bitplane.conjugateBitplane()
-				bitplane.calculateComplexity()
-
 			self.msgBitplanes.append(bitplane)
 
 	def sequentialEmbedding(self):
@@ -250,6 +243,7 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
+							
 							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
 							msgBitplaneIdx += 1
 
@@ -264,21 +258,16 @@ class BPCS :
 			idx += 1
 
 	def createImage(self):
-		blocks = []
-		for block in self.bitPlanes:
-			i = 0
-			while i < len(block):
-				j = 0
-				while j<len(block[i]):
-					block[i][j].convertCGC2PBC()
-					j+=1
-				i+=1
-
+		# Convert CGC to PBC
 		# for block in self.bitPlanes:
-		# 	for b in block:
-		# 		for c in b :
-		# 			print(c.bits)
-			
+		# 	i = 0
+		# 	while i < len(block):
+		# 		j = 0
+		# 		while j<len(block[i]):
+		# 			block[i][j].convertCGC2PBC()
+		# 			j+=1
+		# 		i+=1
+
 		idx = 0
 		for block in self.bitPlanes:
 			i = 0
@@ -290,18 +279,17 @@ class BPCS :
 					k = 0
 					bit = ''
 					while k < 8:
-						# print(block[j][k].bits)
 						bit += str(block[j][7-k].bits[i])
 						k+=1
 					values.append(int(bit, 2))
 					j+=1
-				# print(block)
 				rgb.append(values)
 				i+=1
 
 			self.blocks[idx] = rgb
 			idx+=1
 
+	
 	def create_image(self, i, j):
 		image = Image.new(self.mode, (i, j), "white")
 		return image
@@ -314,22 +302,25 @@ class BPCS :
 		i = 1
 		idx = 0
 		limit = 0
-		j = 0
 		col = 0
 		limitIdx = 0
+
 		while i < width+1:
 			j = 1
 			while j < height+1:
-				if self.mode == 'L':
-					pixels[i-1, j-1] = self.blocks[col][idx-1][0]
-				else:
-					pixels[i-1, j-1] = tuple(self.blocks[col][idx-1])
 
+				if j == 1:
+					idx = limitIdx
+				if self.mode == 'L':
+					pixels[i-1, j-1] = self.blocks[col][idx][0]
+				else:
+					pixels[i-1, j-1] = tuple(self.blocks[col][idx])
+
+				idx += 1
 				if j % 8 == 0 or j >= height:
 					col += 1
 					idx = limitIdx
 
-				idx += 1
 				j+=1
 
 			limitIdx += 8
@@ -342,37 +333,66 @@ class BPCS :
 
 		new.save('stego_'+self.imagePath, self.image.format)
 
-	# def sequentialExtracting(self):
-	# 	self.dividePixels()
-	# 	self.createBitplanes()
+	def sequentialExtracting(self):
+		self.dividePixels()
+		self.createBitplanes()
+		self.msgBitplanes = []
+		idx = 0
 
-	# 	msgBitplaneIdx = 0
-	# 	idx = 0
+		for colors in self.bitPlanes:
+			if idx not in self.notAllowed:
+				for bitplanes in colors: # 1 for grayscale, 3 for rgb
+					i = 0
+					while i < len(bitplanes): 
 
-	# 	for colors in self.bitPlanes:
-	# 		if idx not in self.notAllowed:
-	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
-	# 				i = 0
-	# 				while i < len(bitplanes): 
-	# 					if bitplanes[i].complexity > threshold:
-	# 						self.msgBitplanes[msgBitplaneIdx].bits = bitplane[i].bits
-	# 						msgBitplaneIdx += 1
+						if bitplanes[i].complexity > threshold:
 
-	# 					i+=1
-	# 		idx += 1
+							self.msgBitplanes.append(bitplanes[i])
+
+						i+=1
+						if len(self.msgBitplanes) > 3:
+							break
+					if len(self.msgBitplanes) > 3:
+						break
+
+			if len(self.msgBitplanes) > 3:
+				break
+			idx += 1
+
+	def messageChain(self):
+		bits = []
+		bit = ''
+		for bitplane in self.msgBitplanes:
+
+			i = 1
+			for b in bitplane.bits:
+				bit += str(b)
+				if i % 8 == 0:
+					bits.append(bit)
+					bit = ''
+				i+=1
+		msg = ''
+		for bit in bits:
+			msg += chr(int(bit, 2))
+		print(msg)	
 
 
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.divideMessage()
-	bpcs.createMsgBitplane()
-	bpcs.sequentialEmbedding()
-	bpcs.createImage()
+	# bpcs.dividePixels()
+	# bpcs.createBitplanes()
+	# bpcs.divideMessage()
+	# bpcs.createMsgBitplane()
+	# bpcs.sequentialEmbedding()
+	bpcs.sequentialExtracting()
+	bpcs.messageChain()
+	# bpcs.createImage()
+	# bpcs.dummy()
+	# bpcs.createBitplanes()
+	# bpcs.sequentialExtracting()
+	# bpcs.messageChain()
 
-	# print(bpcs.blocks)
-	bpcs.writeImage()
-	# bpcs.writeImage()
-		# print(bpcs.msgBitplanes[0].bits)
+
+	# bpcs.writeImage()	
+	
