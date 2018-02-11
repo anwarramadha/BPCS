@@ -96,14 +96,14 @@ class BPCS :
 			j = 1
 			while j < row:
 
-				if j < self.height + 1 and i < self.height + 1: # iterasi masih kurang dari jumlah pixel
+				if j < self.height + 1 and i < self.width + 1: # iterasi masih kurang dari jumlah pixel
 					if isinstance(px[i-1, j-1], int): # gambar grayscale
 						bits.append([bin(px[i-1, j-1])[2:].zfill(8)])
 						# bits.append([px[i-1, j-1]])
 					else: # gambar berwarna
 						bits.append([bin(x)[2:].zfill(8) for x in px[i-1,j-1]])
 				else:
-					exc =  bin(256)[2:].zfill(8)
+					exc =  bin(255)[2:].zfill(8)
 					bits.append((exc, exc, exc)) 
 					if idx not in self.notAllowed:
 						self.notAllowed.append(idx)
