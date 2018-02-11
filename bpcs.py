@@ -345,7 +345,7 @@ class BPCS :
 				break
 			idx += 1
 
-	def messageChain(self):
+	def joinMessage(self):
 		bits = []
 		bit = ''
 		for bitplane in self.msgBitplanes:
@@ -376,4 +376,4 @@ if __name__ == "__main__":
 	# bpcs.writeImage()	
 	
 	bpcs.sequentialExtracting()
-	bpcs.messageChain()
+	bpcs.joinMessage()
