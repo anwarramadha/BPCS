@@ -23,14 +23,16 @@ class Bitplane:
 		self.bits.append(int(bit[7-bitPlaneNumber]))
 
 	def convertPBCCGC(self):
-		i = 1
-		# print(self.bits)
-		converted = [self.bits[0]]
+		i = 0
+		converted = []
 		while i < len(self.bits):
-			converted.append(self.bits[i-1] ^ self.bits[i])
+			if i % 8 == 0:
+				converted.append(self.bits[i])
+			else:
+				converted.append(self.bits[i]^self.bits[i-1])
 			i+=1
-
 		self.bits = converted
+		
 
 	def calculateComplexity(self):
 		i = 0
@@ -57,6 +59,7 @@ class BPCS :
 	def __init__(self, imagePath, filename):
 		self.imagePath = imagePath
 		self.image = Image.open(self.imagePath)
+		self.mode = self.image.mode
 		self.blocks = []
 		self.bitPlanes = []
 		self.fileMsgName = filename
@@ -95,8 +98,8 @@ class BPCS :
 
 				if j < self.height + 1 and i < self.height + 1: # iterasi masih kurang dari jumlah pixel
 					if isinstance(px[i-1, j-1], int): # gambar grayscale
-						tup = (px[i-1, j-1], )
-						bits.append([bin(x)[2:].zfill(8) for x in tup])
+						bits.append([bin(px[i-1, j-1])[2:].zfill(8)])
+						# bits.append([px[i-1, j-1]])
 					else: # gambar berwarna
 						bits.append([bin(x)[2:].zfill(8) for x in px[i-1,j-1]])
 				else:
@@ -162,13 +165,13 @@ class BPCS :
 					k = 0
 					bitplane = Bitplane()
 					while k < 64: # 64 jumlah kelompok warna
-
+						# print(block[k][i])
 						bitplane.fillBits(block[k][i], j)
 						k += 1
 					j += 1
-
 					# ubah dari PBC ke CGC
-					bitplane.convertPBCCGC()
+					# print(bitplane.bits)
+					# bitplane.convertPBCCGC()
 					bitplane.calculateComplexity()
 					bitplaneForEachColor.append(bitplane)
 					# bitplane.bits  = []
@@ -244,12 +247,107 @@ class BPCS :
 						i+=1
 					if msgBitplaneIdx == len(self.msgBitplanes):
 						break
+			if msgBitplaneIdx == len(self.msgBitplanes):
+				break
 			idx += 1
 
 	def createImage(self):
-		blocks = []
+		# blocks = []
+		# for block in self.bitPlanes:
+		# 	i = 0
+		# 	while i < len(block):
+		# 		j = 0
+		# 		while j<len(block[i]):
+		# 			# block[i][j].convertPBCCGC()
+		# 			j+=1
+		# 		i+=1
+
+		# for block in self.bitPlanes:
+		# 	for b in block:
+		# 		for c in b :
+		# 			print(c.bits)
+			
+		idx = 0
 		for block in self.bitPlanes:
-			pass
+			i = 0
+			rgb = []
+			while i < 64:
+				j = 0
+				values = []
+				while j < len(block):
+					k = 0
+					bit = ''
+					while k < 8:
+						# print(block[j][k].bits)
+						bit += str(block[j][7-k].bits[i])
+						k+=1
+					values.append(int(bit, 2))
+					j+=1
+				# print(block)
+				rgb.append(values)
+				i+=1
+
+			self.blocks[idx] = rgb
+			idx+=1
+
+	def create_image(self, i, j):
+		image = Image.new(self.mode, (i, j), "white")
+		return image
+
+	def writeImage(self):
+		width, height = self.image.size
+		new = self.create_image(width, height)
+		pixels = new.load()
+
+		i = 1
+		idx = 0
+		limit = 0
+		j = 0
+		col = 0
+		limitIdx = 0
+		while i < width+1:
+			j = 1
+			while j < height+1:
+				if self.mode == 'L':
+					pixels[i-1, j-1] = self.blocks[col][idx-1][0]
+				else:
+					pixels[i-1, j-1] = tuple(self.blocks[col][idx-1])
+
+				if j % 8 == 0 or j >= height:
+					col += 1
+					idx = limitIdx
+
+				idx += 1
+				j+=1
+
+			limitIdx += 8
+			if i % 8 == 0:
+				limit = col
+				limitIdx = 0
+
+			col = limit
+			i+=1
+
+		new.save('stego_'+self.imagePath, self.image.format)
+
+	# def sequentialExtracting(self):
+	# 	self.dividePixels()
+	# 	self.createBitplanes()
+
+	# 	msgBitplaneIdx = 0
+	# 	idx = 0
+
+	# 	for colors in self.bitPlanes:
+	# 		if idx not in self.notAllowed:
+	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
+	# 				i = 0
+	# 				while i < len(bitplanes): 
+	# 					if bitplanes[i].complexity > threshold:
+	# 						self.msgBitplanes[msgBitplaneIdx].bits = bitplane[i].bits
+	# 						msgBitplaneIdx += 1
+
+	# 					i+=1
+	# 		idx += 1
 
 
 if __name__ == "__main__":
@@ -261,4 +359,8 @@ if __name__ == "__main__":
 	bpcs.createMsgBitplane()
 	bpcs.sequentialEmbedding()
 	bpcs.createImage()
+
+	# print(bpcs.blocks)
+	bpcs.writeImage()
+	# bpcs.writeImage()
 		# print(bpcs.msgBitplanes[0].bits)
