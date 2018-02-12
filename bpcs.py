@@ -229,6 +229,7 @@ class BPCS :
 					bitplane.bits.append(int(bit))
 			bitplane.calculateComplexity()
 			self.msgBitplanes.append(bitplane)
+		print(len(self.msgBitplanes))
 
 	def seed(self, idx):
 		if len(self.key) > 0:
@@ -384,6 +385,7 @@ class BPCS :
 		keyLen = len(self.key)
 		keyIdx = 0
 		extracted = []
+		msgBitplaneNumber = 91
 
 		while idx < len(self.bitPlanes):
 			if idx not in self.notAllowed and idx not in extracted:
@@ -396,19 +398,19 @@ class BPCS :
 							self.msgBitplanes.append(bitplanes[i])
 
 						i+=1
-						if len(self.msgBitplanes) >= 3:
+						if len(self.msgBitplanes) >= msgBitplaneNumber:
 							break
-					if len(self.msgBitplanes) >= 3:
+					if len(self.msgBitplanes) >= msgBitplaneNumber:
 						break
 
-			if len(self.msgBitplanes) >= 3:
+			if len(self.msgBitplanes) >= msgBitplaneNumber:
 				break
 			keyIdx += 1
 			if keyIdx == keyLen:
 				keyIdx = 0
 
 			idx += self.seed(keyIdx)
-			if idx >= len(self.bitPlanes) and len(extracted) < 3:
+			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
 				idx = self.seed(keyIdx)
 
 	# def sequentialExtracting(self):
@@ -463,7 +465,7 @@ if __name__ == "__main__":
 	bpcs.createBitplanes()
 	key = raw_input("key: ")
 	# bpcs.readMsg()
-	bpcs.setStegoKey(key)
+	# bpcs.setStegoKey(key)
 	# bpcs.encryptMsg()
 	# bpcs.divideMessage()
 	# bpcs.createMsgBitplane()
@@ -475,5 +477,5 @@ if __name__ == "__main__":
 	bpcs.setStegoKey(key)
 	bpcs.extracting()
 	bpcs.joinMessage()
-	# bpcs.decryptMsg()
+	bpcs.decryptMsg()
 	print(bpcs.message)
