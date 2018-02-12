@@ -4,6 +4,7 @@
 import binascii
 import io
 import sys
+import extended_vigenere as cipher
 from PIL import Image
 import readline
 readline.parse_and_bind("tab: complete")
@@ -28,7 +29,7 @@ class Bitplane:
 		i = 0
 		converted = []
 		while i < len(self.bits):
-			if i % 8 == 0:
+			if i % 4 == 0:
 				converted.append(self.bits[i])
 			else:
 				converted.append(self.bits[i-1]^self.bits[i])
@@ -40,7 +41,7 @@ class Bitplane:
 		i = 0
 		converted = []
 		while i < len(self.bits):
-			if i % 8 == 0:
+			if i % 4 == 0:
 				converted.append(self.bits[i])
 			else:
 				converted.append(self.bits[i]^self.pbc[i-1])
@@ -179,16 +180,27 @@ class BPCS :
 				i+=1
 			self.bitPlanes.append(bitplaneForAllColor) # list dari bitplane semua warna, len = 1 untuk grayscale, 3 untuk rgb
 
+	def setStegoKey(self, key):
+		self.key = key
+
+	def encryptMsg(self):
+		self.message = cipher.encrypt(self.message, self.key)
+
+	def decryptMsg(self):
+		self.message = cipher.decrypt(self.message, self.key)
+
 	def defineMsgLen(self):
 		if self.msglen % 8 == 0:
 			return self.msglen
 		else:
 			return self.msglen + (8 - self.msglen % 8) + 1
 
-	def divideMessage(self):
+	def readMsg(self):
 		file = open(self.fileMsgName, 'r')
 		self.message = file.read()
 		file.close()
+
+	def divideMessage(self):
 
 		blockSize = len(self.message) / 8 + int(len(self.message) % 8 > 0)
 		self.msgBlocks = self.initializeBlock(blockSize)
@@ -218,30 +230,75 @@ class BPCS :
 			bitplane.calculateComplexity()
 			self.msgBitplanes.append(bitplane)
 
-	def sequentialEmbedding(self):
+	def seed(self, idx):
+		if len(self.key) > 0:
+			return cipher.extended_ascii.index(self.key[idx]) % 10
+		elif len(self.key) == 0 or self.seq == 1:
+			return 1
+
+	def embedding(self):
 		# pass
 		msgBitplaneIdx = 0
-		idx = 0
+		idx = self.seed(0)
+		keyLen = len(self.key)
+		keyIdx = 0
+		replaced = []
 
-		for colors in self.bitPlanes:
-			if idx not in self.notAllowed:
-				for bitplanes in colors: # 1 for grayscale, 3 for rgb
+		while idx < len(self.bitPlanes):
+			if idx not in self.notAllowed and idx not in replaced:
+				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
-						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
 
+						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
+							replaced.append(idx)
 							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
 							msgBitplaneIdx += 1
 
 						if msgBitplaneIdx == len(self.msgBitplanes):
 							break
 
+
 						i+=1
 					if msgBitplaneIdx == len(self.msgBitplanes):
 						break
 			if msgBitplaneIdx == len(self.msgBitplanes):
 				break
-			idx += 1
+			keyIdx+=1
+
+			if keyIdx == keyLen:
+				keyIdx = 0
+
+			idx += self.seed(keyIdx)
+			if idx >= len(self.bitPlanes) and len(replaced) < len(self.msgBitplanes):
+				idx = self.seed(keyIdx)
+
+	# def sequentialEmbedding(self):
+	# 	# pass
+	# 	msgBitplaneIdx = 0
+	# 	idx = 0
+
+	# 	for colors in self.bitPlanes:
+	# 		if idx not in self.notAllowed:
+	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
+	# 				i = 0
+	# 				while i < len(bitplanes): 
+
+	# 					if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
+
+	# 						bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
+	# 						msgBitplaneIdx += 1
+
+	# 					if msgBitplaneIdx == len(self.msgBitplanes):
+	# 						break
+
+
+	# 					i+=1
+	# 				if msgBitplaneIdx == len(self.msgBitplanes):
+	# 					break
+	# 		if msgBitplaneIdx == len(self.msgBitplanes):
+	# 			break
+	# 		idx += 1
 
 	def createImage(self):
 		# Convert CGC to PBC
@@ -319,31 +376,66 @@ class BPCS :
 
 		new.save('stego_'+self.imagePath, self.image.format)
 
-	def sequentialExtracting(self):
-		self.dividePixels()
-		self.createBitplanes()
+	def extracting(self):
+		# self.dividePixels()
+		# self.createBitplanes()
 		self.msgBitplanes = []
-		idx = 0
+		idx = self.seed(0)
+		keyLen = len(self.key)
+		keyIdx = 0
+		extracted = []
 
-		for colors in self.bitPlanes:
-			if idx not in self.notAllowed:
-				for bitplanes in colors: # 1 for grayscale, 3 for rgb
+		while idx < len(self.bitPlanes):
+			if idx not in self.notAllowed and idx not in extracted:
+				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
 
 						if bitplanes[i].complexity > threshold:
-
+							extracted.append(idx)
 							self.msgBitplanes.append(bitplanes[i])
 
 						i+=1
-						if len(self.msgBitplanes) > 3:
+						if len(self.msgBitplanes) >= 3:
 							break
-					if len(self.msgBitplanes) > 3:
+					if len(self.msgBitplanes) >= 3:
 						break
 
-			if len(self.msgBitplanes) > 3:
+			if len(self.msgBitplanes) >= 3:
 				break
-			idx += 1
+			keyIdx += 1
+			if keyIdx == keyLen:
+				keyIdx = 0
+
+			idx += self.seed(keyIdx)
+			if idx >= len(self.bitPlanes) and len(extracted) < 3:
+				idx = self.seed(keyIdx)
+
+	# def sequentialExtracting(self):
+	# 	# self.dividePixels()
+	# 	# self.createBitplanes()
+	# 	self.msgBitplanes = []
+	# 	idx = 0
+
+	# 	for colors in self.bitPlanes:
+	# 		if idx not in self.notAllowed:
+	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
+	# 				i = 0
+	# 				while i < len(bitplanes): 
+
+	# 					if bitplanes[i].complexity > threshold:
+
+	# 						self.msgBitplanes.append(bitplanes[i])
+
+	# 					i+=1
+	# 					if len(self.msgBitplanes) > 3:
+	# 						break
+	# 				if len(self.msgBitplanes) > 3:
+	# 					break
+
+	# 		if len(self.msgBitplanes) > 3:
+	# 			break
+	# 		idx += 1
 
 	def joinMessage(self):
 		bits = []
@@ -357,23 +449,31 @@ class BPCS :
 					bits.append(bit)
 					bit = ''
 				i+=1
-		msg = ''
+
+		self.message = ''
 		for bit in bits:
-			msg += chr(int(bit, 2))
-		print(msg)	
+			self.message += chr(int(bit, 2))
+		
 
 
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
-	# bpcs.dividePixels()
-	# bpcs.createBitplanes()
+	bpcs.dividePixels()
+	bpcs.createBitplanes()
+	key = raw_input("key: ")
+	# bpcs.readMsg()
+	bpcs.setStegoKey(key)
+	# bpcs.encryptMsg()
 	# bpcs.divideMessage()
 	# bpcs.createMsgBitplane()
-	# bpcs.sequentialEmbedding()
+	# bpcs.embedding()
 	# bpcs.createImage()
 
 	# bpcs.writeImage()	
 	
-	bpcs.sequentialExtracting()
+	bpcs.setStegoKey(key)
+	bpcs.extracting()
 	bpcs.joinMessage()
+	# bpcs.decryptMsg()
+	print(bpcs.message)
