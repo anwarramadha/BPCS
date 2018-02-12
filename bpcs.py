@@ -274,32 +274,6 @@ class BPCS :
 			if idx >= len(self.bitPlanes) and len(replaced) < len(self.msgBitplanes):
 				idx = self.seed(keyIdx)
 
-	# def sequentialEmbedding(self):
-	# 	# pass
-	# 	msgBitplaneIdx = 0
-	# 	idx = 0
-
-	# 	for colors in self.bitPlanes:
-	# 		if idx not in self.notAllowed:
-	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
-	# 				i = 0
-	# 				while i < len(bitplanes): 
-
-	# 					if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
-
-	# 						bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
-	# 						msgBitplaneIdx += 1
-
-	# 					if msgBitplaneIdx == len(self.msgBitplanes):
-	# 						break
-
-
-	# 					i+=1
-	# 				if msgBitplaneIdx == len(self.msgBitplanes):
-	# 					break
-	# 		if msgBitplaneIdx == len(self.msgBitplanes):
-	# 			break
-	# 		idx += 1
 
 	def createImage(self):
 		# Convert CGC to PBC
@@ -412,32 +386,6 @@ class BPCS :
 			idx += self.seed(keyIdx)
 			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
 				idx = self.seed(keyIdx)
-
-	# def sequentialExtracting(self):
-	# 	# self.dividePixels()
-	# 	# self.createBitplanes()
-	# 	self.msgBitplanes = []
-	# 	idx = 0
-
-	# 	for colors in self.bitPlanes:
-	# 		if idx not in self.notAllowed:
-	# 			for bitplanes in colors: # 1 for grayscale, 3 for rgb
-	# 				i = 0
-	# 				while i < len(bitplanes): 
-
-	# 					if bitplanes[i].complexity > threshold:
-
-	# 						self.msgBitplanes.append(bitplanes[i])
-
-	# 					i+=1
-	# 					if len(self.msgBitplanes) > 3:
-	# 						break
-	# 				if len(self.msgBitplanes) > 3:
-	# 					break
-
-	# 		if len(self.msgBitplanes) > 3:
-	# 			break
-	# 		idx += 1
 
 	def joinMessage(self):
 		bits = []
