@@ -81,6 +81,42 @@ class BPCS :
 		self.msgBlocks = []
 		self.notAllowed = []
 
+	# def convertPBC2CGC(self):
+	# 	self.pbc = self.image.load()
+	# 	image = self.create_image(self.width, self.height)
+	# 	px = image.load()
+	# 	i = 0
+	# 	while i<self.height :
+	# 		j = 0
+	# 		while j < self.width:
+	# 			if j % self.width == 0:
+	# 				px[i, j] = self.pbc[i, j]
+	# 			else:
+	# 				if isinstance(self.pbc[i, j], int):
+	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
+	# 				else:
+	# 					pass
+	# 			j+=1
+	# 		i+=1
+
+	# 	return image
+
+	# def convertCGC2PBC(self, image):
+	# 	px = image.load()
+	# 	i = 0
+	# 	while i<self.height :
+	# 		j = 0
+	# 		while j < self.width:
+	# 			if j % self.width == 0:
+	# 				px[i, j] = self.pbc[i, j]
+	# 			else:
+	# 				if isinstance(px[i, j], int):
+	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
+	# 				else:
+	# 					pass
+	# 			j+=1
+	# 		i+=1
+
 	def defineBlockSize(self):
 		self.width, self.height = self.image.size
 		return (self.width / 8 + int(self.width % 8 > 0)) * (self.height / 8 + int(self.height % 8 > 0)) 
@@ -112,7 +148,9 @@ class BPCS :
 	def dividePixels(self):
 		#jumlah blok
 		blockSize = self.defineBlockSize()
+		# image = self.convertPBC2CGC()
 
+		image = self.image
 		self.blocks = self.initializeBlock(blockSize)
 
 		i = 1
@@ -120,7 +158,7 @@ class BPCS :
 		limit = 0
 		col, row = self.definePixelBoundary()
 
-		px = self.image.load() # load pixel dari gambar
+		px = image.load() # load pixel dari gambar
 		while i < col:
 			bits = []
 			j = 1
@@ -156,8 +194,10 @@ class BPCS :
 
 		for block in self.blocks:
 			i = 0
+			colorLen = len(block[0])
 			bitplaneForAllColor = []
-			while i < len(block[0]): # 3 for rgb, 1 for grayscale
+
+			while i < colorLen: # 3 for rgb, 1 for grayscale
 				j = 0
 				bitplaneForEachColor = []
 				while j < 8: # 8 bit dari setiap warna pada rgb
@@ -229,7 +269,6 @@ class BPCS :
 					bitplane.bits.append(int(bit))
 			bitplane.calculateComplexity()
 			self.msgBitplanes.append(bitplane)
-		print(len(self.msgBitplanes))
 
 	def seed(self, idx):
 		if len(self.key) > 0:
@@ -244,8 +283,10 @@ class BPCS :
 		keyLen = len(self.key)
 		keyIdx = 0
 		replaced = []
+		bitplaneLen = len(self.bitPlanes)
+		msgBitplaneLen = len(self.msgBitplanes)
 
-		while idx < len(self.bitPlanes):
+		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
@@ -256,14 +297,14 @@ class BPCS :
 							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
 							msgBitplaneIdx += 1
 
-						if msgBitplaneIdx == len(self.msgBitplanes):
+						if msgBitplaneIdx == msgBitplaneLen:
 							break
 
 
 						i+=1
-					if msgBitplaneIdx == len(self.msgBitplanes):
+					if msgBitplaneIdx == msgBitplaneLen:
 						break
-			if msgBitplaneIdx == len(self.msgBitplanes):
+			if msgBitplaneIdx == msgBitplaneLen:
 				break
 			keyIdx+=1
 
@@ -271,7 +312,7 @@ class BPCS :
 				keyIdx = 0
 
 			idx += self.seed(keyIdx)
-			if idx >= len(self.bitPlanes) and len(replaced) < len(self.msgBitplanes):
+			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
 				idx = self.seed(keyIdx)
 
 
@@ -290,10 +331,12 @@ class BPCS :
 		for block in self.bitPlanes:
 			i = 0
 			rgb = []
+			blockLen = len(block)
+
 			while i < 64:
 				j = 0
 				values = []
-				while j < len(block):
+				while j < blockLen:
 					k = 0
 					bit = ''
 					while k < 8:
@@ -360,8 +403,9 @@ class BPCS :
 		keyIdx = 0
 		extracted = []
 		msgBitplaneNumber = 91
+		bitplaneLen = len(self.bitPlanes)
 
-		while idx < len(self.bitPlanes):
+		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in extracted:
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
@@ -412,16 +456,19 @@ if __name__ == "__main__":
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
 	key = raw_input("key: ")
-	# bpcs.readMsg()
-	# bpcs.setStegoKey(key)
-	# bpcs.encryptMsg()
-	# bpcs.divideMessage()
-	# bpcs.createMsgBitplane()
-	# bpcs.embedding()
-	# bpcs.createImage()
+	bpcs.readMsg()
+	bpcs.setStegoKey(key)
+	bpcs.encryptMsg()
+	bpcs.divideMessage()
+	bpcs.createMsgBitplane()
+	bpcs.embedding()
+	bpcs.createImage()
 
-	# bpcs.writeImage()	
+	bpcs.writeImage()	
 	
+	bpcs = BPCS('stego_'+filename, 'example.txt')
+	bpcs.dividePixels()
+	bpcs.createBitplanes()
 	bpcs.setStegoKey(key)
 	bpcs.extracting()
 	bpcs.joinMessage()
