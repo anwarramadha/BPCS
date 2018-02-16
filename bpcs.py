@@ -1,6 +1,6 @@
 # Untuk penysipan pesan pada gambar berformat bmp dan png yang tidak terkompresi
 # gambar memiliki warna 1 byte atau 3 byte
-
+import time
 import binascii
 import io
 import sys
@@ -12,62 +12,6 @@ global chessBoard, threshold, maxChange
 chessBoard = [i % 2 for i in xrange(64)]
 threshold = 0.3
 maxChange = 112
-
-# kelas untuk menampung bitplane
-# untuk mempermudah perhitungan kompleksitas, pbc->cgc
-class Bitplane:
-	def __init__(self):
-		self.bits = []
-		self.pbc = []
-		self.complexity = 0
-
-	def fillBits(self, bit, bitPlaneNumber):
-		self.bits.append(int(bit[7-bitPlaneNumber]))
-
-	def convertPBC2CGC(self):
-		self.pbc = self.bits
-		i = 0
-		converted = []
-		while i < len(self.bits):
-			if i % 4 == 0:
-				converted.append(self.bits[i])
-			else:
-				converted.append(self.bits[i-1]^self.bits[i])
-			i+=1
-
-		self.bits = converted
-		
-	def convertCGC2PBC(self):
-		i = 0
-		converted = []
-		while i < len(self.bits):
-			if i % 4 == 0:
-				converted.append(self.bits[i])
-			else:
-				converted.append(self.bits[i]^self.pbc[i-1])
-			i+=1
-
-		self.bits = converted
-
-	def calculateComplexity(self):
-		i = 0
-		change = 0
-		while i < len(self.bits):
-			if i < 55 and i % 8 != 0:
-				change += abs(self.bits[i]-self.bits[i-1])+abs(self.bits[i]-self.bits[i+8])
-			elif i % 8 == 0 and i < 55:
-				change += abs(self.bits[i]-self.bits[i+8])
-			elif i > 55:
-				change += abs(self.bits[i]-self.bits[i-1])
-			i+=1
-
-		self.complexity = float(change)/float(maxChange)
-
-	def conjugateBitplane(self):
-		i = 0
-		while i < len(self.bits):
-			self.bits[i] ^= chessBoard[i]
-			i+=1
 
 class BPCS :
 
@@ -189,7 +133,21 @@ class BPCS :
 
 			idx = limit
 			i+=1
-			
+
+	def calculateComplexity(self, bitplane):
+		i = 0
+		change = 0
+		while i < len(bitplane):
+			if i < 55 and i % 8 != 0:
+				change += abs(bitplane[i]-bitplane[i-1])+abs(bitplane[i]-bitplane[i+8])
+			elif i % 8 == 0 and i < 55:
+				change += abs(bitplane[i]-bitplane[i+8])
+			elif i > 55:
+				change += abs(bitplane[i]-bitplane[i-1])
+			i+=1
+
+		return float(change)/float(maxChange)
+
 	def createBitplanes(self): 
 
 		for block in self.blocks:
@@ -202,23 +160,21 @@ class BPCS :
 				bitplaneForEachColor = []
 				while j < 8: # 8 bit dari setiap warna pada rgb
 					k = 0
-					bitplane = Bitplane()
-					while k < 64: # 64 jumlah kelompok warna
 
-						bitplane.fillBits(block[k][i], j)
+					bits = []
+					while k < 64: # 64 jumlah kelompok warna
+						bits.append(int(block[k][i][7-j]))
 						k += 1
 					j += 1
-					# ubah dari PBC ke CGC
 
-					# bitplane.convertPBC2CGC()
-					bitplane.calculateComplexity()
-
+					bitplane = {'bitplane':bits, 'complexity':self.calculateComplexity(bits)}
 					bitplaneForEachColor.append(bitplane)
 
 				bitplaneForAllColor.append(bitplaneForEachColor)
 			
 				i+=1
-			self.bitPlanes.append(bitplaneForAllColor) # list dari bitplane semua warna, len = 1 untuk grayscale, 3 untuk rgb
+			self.bitPlanes.append(bitplaneForAllColor)
+			
 
 	def setStegoKey(self, key):
 		self.key = key
@@ -258,16 +214,22 @@ class BPCS :
 				idx+=1
 			i+=1
 
+	def conjugateBitplane(self, bitplane):
+		i = 0
+		while i < len(bitplane):
+			bitplane[i] ^= chessBoard[i]
+			i+=1
+
 	def createMsgBitplane(self):
 		self.msgBitplanes = []
 
 		for block in self.msgBlocks:
 			i = 0
-			bitplane = Bitplane()
+			bitplanebits = []
 			for bits in block:
 				for bit in bits:
-					bitplane.bits.append(int(bit))
-			bitplane.calculateComplexity()
+					bitplanebits.append(int(bit))
+			bitplane = {'bitplane':bitplanebits, 'complexity':self.calculateComplexity(bitplanebits)}
 			self.msgBitplanes.append(bitplane)
 
 	def seed(self, idx):
@@ -292,9 +254,9 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 
-						if bitplanes[i].complexity > threshold and msgBitplaneIdx < len(self.msgBitplanes):
+						if bitplanes[i]['complexity'] > threshold and msgBitplaneIdx < len(self.msgBitplanes):
 							replaced.append(idx)
-							bitplanes[i].bits = self.msgBitplanes[msgBitplaneIdx].bits
+							bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
 							msgBitplaneIdx += 1
 
 						if msgBitplaneIdx == msgBitplaneLen:
@@ -316,17 +278,8 @@ class BPCS :
 				idx = self.seed(keyIdx)
 
 
-	def createImage(self):
-		# Convert CGC to PBC
-		# for block in self.bitPlanes:
-		# 	i = 0
-		# 	while i < len(block):
-		# 		j = 0
-		# 		while j<len(block[i]):
-		# 			block[i][j].convertCGC2PBC()
-		# 			j+=1
-		# 		i+=1
 
+	def createImage(self):
 		idx = 0
 		for block in self.bitPlanes:
 			i = 0
@@ -340,7 +293,7 @@ class BPCS :
 					k = 0
 					bit = ''
 					while k < 8:
-						bit += str(block[j][7-k].bits[i])
+						bit += str(block[j][7-k]['bitplane'][i])
 						k+=1
 					values.append(int(bit, 2))
 					j+=1
@@ -349,7 +302,6 @@ class BPCS :
 
 			self.blocks[idx] = rgb
 			idx+=1
-
 	
 	def create_image(self, i, j):
 		image = Image.new(self.mode, (i, j), "white")
@@ -411,7 +363,7 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 
-						if bitplanes[i].complexity > threshold:
+						if bitplanes[i]['complexity'] > threshold:
 							extracted.append(idx)
 							self.msgBitplanes.append(bitplanes[i])
 
@@ -437,7 +389,7 @@ class BPCS :
 		for bitplane in self.msgBitplanes:
 
 			i = 1
-			for b in bitplane.bits:
+			for b in bitplane['bitplane']:
 				bit += str(b)
 				if i % 8 == 0:
 					bits.append(bit)
@@ -453,6 +405,7 @@ class BPCS :
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
+	start_time = time.time()
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
 	key = raw_input("key: ")
@@ -474,3 +427,5 @@ if __name__ == "__main__":
 	bpcs.joinMessage()
 	bpcs.decryptMsg()
 	print(bpcs.message)
+
+	print("--- %s seconds ---" % (time.time() - start_time))
