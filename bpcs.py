@@ -163,7 +163,7 @@ class BPCS :
 
 					bits = []
 					while k < 64: # 64 jumlah kelompok warna
-						bits.append(int(block[k][i][7-j]))
+						bits.append(int(block[k][i][j]))
 						k += 1
 					j += 1
 
@@ -293,7 +293,7 @@ class BPCS :
 					k = 0
 					bit = ''
 					while k < 8:
-						bit += str(block[j][7-k]['bitplane'][i])
+						bit += str(block[j][k]['bitplane'][i])
 						k+=1
 					values.append(int(bit, 2))
 					j+=1
@@ -347,8 +347,6 @@ class BPCS :
 		new.save('stego_'+self.imagePath, self.image.format)
 
 	def extracting(self):
-		# self.dividePixels()
-		# self.createBitplanes()
 		self.msgBitplanes = []
 		idx = self.seed(0)
 		keyLen = len(self.key)
@@ -405,20 +403,27 @@ class BPCS :
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
+	key = raw_input("key: ")
+
 	start_time = time.time()
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
-	key = raw_input("key: ")
 	bpcs.readMsg()
 	bpcs.setStegoKey(key)
+
 	bpcs.encryptMsg()
 	bpcs.divideMessage()
 	bpcs.createMsgBitplane()
 	bpcs.embedding()
+
 	bpcs.createImage()
 
 	bpcs.writeImage()	
+
+	print("Embed time")
+	print("--- %s seconds ---" % (time.time() - start_time))
 	
+	start_time = time.time()
 	bpcs = BPCS('stego_'+filename, 'example.txt')
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
@@ -427,5 +432,5 @@ if __name__ == "__main__":
 	bpcs.joinMessage()
 	bpcs.decryptMsg()
 	print(bpcs.message)
-
+	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
