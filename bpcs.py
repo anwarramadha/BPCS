@@ -230,25 +230,39 @@ class BPCS :
 
 	def intToBitplanes(number):
 		stringOfBit = ''
-            t={'0':'000','1':'001','2':'010','3':'011',
-               '4':'100','5':'101' ,'6':'110','7':'111'}
-            for c in oct(number)[1:]:
-				stringOfBit+=t[c]
+		t = {'0':'000','1':'001','2':'010','3':'011','4':'100','5':'101' ,'6':'110','7':'111'}
+		for c in oct(int(number))[1:]:
+			stringOfBit+=t[c]
 		bitplanes = []
 		bitplane = []
-		if ((remainder = len(stringOfBit)%64) != 0):
+		remainder = len(stringOfBit)%64
+		if (remainder != 0):
 			for i in range(remainder):
 				stringOfBit = '0'+stringOfBit
 		iterator = 0
-        for char in stringOfBit
+        for char in stringOfBit:
 			bitplane.append(int(char))
 			iterator+=1
 			if(iterator%64==0):
 				bitplanes.append(bitplane)
+		return bitplanes
+
+	def intToBitplane(number):
+		bitplane = []
+		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
+		for c in oct(int(number))[1:]:
+			bitplane+=t[c]
+		remainder = len(bitplane)%64
+		if (remainder != 0):
+			for i in range(remainder):
+				bitplane = [0]+bitplane
 		return bitplane
 
 	def stringToBitplanes(string):
-		
+		bitplanes=[]
+		for char in string:
+			bitplanes.append(intToBitplane(int(char)))
+		return bitplanes
 
 	def createMsgBitplane(self):
 		self.msgBitplanes = []
