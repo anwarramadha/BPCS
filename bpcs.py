@@ -4,6 +4,7 @@ import time
 import binascii
 import io
 import sys
+import os
 import extended_vigenere as cipher
 from PIL import Image
 import readline
@@ -22,6 +23,7 @@ class BPCS :
 		self.blocks = []
 		self.bitPlanes = []
 		self.fileMsgName = filename
+		self.numberOfMsgPlane = 0
 		self.msgBlocks = []
 		self.notAllowed = []
 
@@ -192,6 +194,12 @@ class BPCS :
 			return self.msglen + (8 - self.msglen % 8) + 1
 
 	def readMsg(self):
+		numberOfBit =  os.stat(self.fileMsgName).st_size*8
+		modular64OfNumber = numberOfBit%64
+		if(modular64OfNumber == 0):
+			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64
+		else:
+			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64+1
 		file = open(self.fileMsgName, 'r')
 		self.message = file.read()
 		file.close()
@@ -219,6 +227,28 @@ class BPCS :
 		while i < len(bitplane):
 			bitplane[i] ^= chessBoard[i]
 			i+=1
+
+	def intToBitplanes(number):
+		stringOfBit = ''
+            t={'0':'000','1':'001','2':'010','3':'011',
+               '4':'100','5':'101' ,'6':'110','7':'111'}
+            for c in oct(number)[1:]:
+				stringOfBit+=t[c]
+		bitplanes = []
+		bitplane = []
+		if ((remainder = len(stringOfBit)%64) != 0):
+			for i in range(remainder):
+				stringOfBit = '0'+stringOfBit
+		iterator = 0
+        for char in stringOfBit
+			bitplane.append(int(char))
+			iterator+=1
+			if(iterator%64==0):
+				bitplanes.append(bitplane)
+		return bitplane
+
+	def stringToBitplanes(string):
+		
 
 	def createMsgBitplane(self):
 		self.msgBitplanes = []
