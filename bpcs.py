@@ -26,6 +26,7 @@ class BPCS :
 		self.numberOfMsgPlane = 0
 		self.msgBlocks = []
 		self.notAllowed = []
+		self.conjugateTable = []
 
 	# def convertPBC2CGC(self):
 	# 	self.pbc = self.image.load()
@@ -344,7 +345,20 @@ class BPCS :
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
 				idx = self.seed(keyIdx)
 
+	#Model tabel berupa bitplanes
+	def appendConjugateTable(self, bit):
+		if (len(self.conjugateTable) == 0):
+			self.conjugateTable.append([bit])
+		elif(len(self.conjugateTable[-1])==64):
+			self.conjugateTable.append([bit])
+		else:
+			self.conjugateTable[-1].append(bit)
 
+	def makeFinalConjugateTable(self):
+		lenghtOfLastBitplane = len(self.conjugateTable[-1])
+		if(lenghtOfLastBitplane!=64):
+			for i in range(64-lenghtOfLastBitplane):
+				self.conjugateTable[-1].append(0)
 
 	def createImage(self):
 		idx = 0
@@ -471,12 +485,6 @@ if __name__ == "__main__":
 	
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
-	temp = bpcs.intToBitplaneExpanded(123456789012345678) 
-	print(temp)
-	print(bpcs.bitplaneToInt(temp))
-	temp = bpcs.stringToBitplanes('saya makan nasi') 
-	print(temp)
-	print(bpcs.bitplanesToString(temp))
 	key = raw_input("key: ")
 
 	start_time = time.time()
