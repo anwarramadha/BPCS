@@ -228,42 +228,65 @@ class BPCS :
 			bitplane[i] ^= chessBoard[i]
 			i+=1
 
-	def intToBitplanes(number):
-		stringOfBit = ''
-		t = {'0':'000','1':'001','2':'010','3':'011','4':'100','5':'101' ,'6':'110','7':'111'}
-		for c in oct(int(number))[1:]:
-			stringOfBit+=t[c]
-		bitplanes = []
-		bitplane = []
-		remainder = len(stringOfBit)%64
-		if (remainder != 0):
-			for i in range(remainder):
-				stringOfBit = '0'+stringOfBit
-		iterator = 0
-        for char in stringOfBit:
-			bitplane.append(int(char))
-			iterator+=1
-			if(iterator%64==0):
-				bitplanes.append(bitplane)
-		return bitplanes
-
-	def intToBitplane(number):
+	#Untuk nama file (Ascii 8 bit)
+	def intToBitplane(self,number):
 		bitplane = []
 		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
 		for c in oct(int(number))[1:]:
 			bitplane+=t[c]
-		remainder = len(bitplane)%64
+		remainder = 8 - len(bitplane)%8
+		if (remainder != 0):
+			for i in range(remainder):
+				bitplane = [0]+bitplane
+		return bitplane
+	
+	#Untuk ukuran file (batas maksimal 64 bit)
+	def intToBitplaneExpanded(self,number):
+		bitplane = []
+		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
+		for c in oct(int(number))[1:]:
+			bitplane+=t[c]
+		remainder = 64 - len(bitplane)%64
 		if (remainder != 0):
 			for i in range(remainder):
 				bitplane = [0]+bitplane
 		return bitplane
 
-	def stringToBitplanes(string):
-		bitplanes=[]
+	def bitplaneToInt(self, bitplane):
+		stringOfBit = ''
+		for bit in bitplane:
+			stringOfBit += str(bit)
+		return int(stringOfBit,2)
+
+	def stringToBitplanes(self, string):
+		bitplanes = []
+		bitplane = []
+		length = 0
 		for char in string:
-			bitplanes.append(intToBitplane(int(char)))
+			bitplane += self.intToBitplane(ord(char))
+			length+=1
+			if(length == 8):
+				bitplanes.append(bitplane)
+				length=0
 		return bitplanes
 
+	def bitplanesToString(self, bitplanes):
+		string = ''
+		char = ''
+		length = 0
+		bitOfChar = ''
+		for bitplane in bitplanes:
+			for bit in bitplane:
+				bitOfChar += str(bit)
+				length += 1
+				if(length == 8):
+					char = unichr(int(bitOfChar,2))
+					string += char
+					char = ''
+					bitOfChar = ''
+					length = 0
+		return string
+	
 	def createMsgBitplane(self):
 		self.msgBitplanes = []
 
@@ -445,8 +468,15 @@ class BPCS :
 
 
 if __name__ == "__main__":
+	
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
+	temp = bpcs.intToBitplaneExpanded(123456789012345678) 
+	print(temp)
+	print(bpcs.bitplaneToInt(temp))
+	temp = bpcs.stringToBitplanes('saya makan nasi') 
+	print(temp)
+	print(bpcs.bitplanesToString(temp))
 	key = raw_input("key: ")
 
 	start_time = time.time()
