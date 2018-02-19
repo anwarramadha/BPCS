@@ -33,10 +33,10 @@
 			    <div class="file-field input-field col s6">
 			      <div class="btn">
 			        <span>Upload Image</span>
-			        <input type="file" name="image_path">
+			        <input type="file" name="filepath" multiple>
 			      </div>
 			      <div class="file-path-wrapper">
-			        <input class="file-path validate" type="text" placeholder="Upload one Image file">
+			        <input class="file-path validate" type="text" placeholder="Upload one or more files">
 			      </div>
 			    </div>
 
@@ -49,19 +49,10 @@
 		            <label for="threshold">Threshold (0,1 - 0,99)</label>
 		          </div>
 
-		        <div class="file-field input-field col s6">
-			      <div class="btn">
-			        <span>Upload File</span>
-			        <input type="file" name="file_path">
-			      </div>
-			      <div class="file-path-wrapper">
-			        <input class="file-path validate" type="text" placeholder="Upload one File to hide">
-			      </div>
-			    </div>
-
 		        <div class="col s3">
 		        	 <input type="checkbox" id="encrypt" name="encrypt">
       					<label for="encrypt">Encrypt</label>
+
 		        </div>
 
 		        <div class="col s3">
@@ -70,7 +61,7 @@
 		        </div>
 
 		        <div class="col s3">
-		        	 <input type="checkbox" id="convert_cgc" name="convert_cgc">
+		        	 <input type="checkbox" id="convert-cgc" name="convert-cgc">
       					<label for="convert-cgc">Convert CGC</label>
 		        </div>
 
