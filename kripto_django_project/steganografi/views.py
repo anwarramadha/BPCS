@@ -8,3 +8,12 @@ def index(request):
     module_dir = os.path.dirname(__file__)
     template = loader.get_template('index.html')
     return HttpResponse(template.render({}, request))
+
+def result(request):
+    # print(restaurantRatingSystem.main_sentiment)
+    # print(restaurantRatingSystem.find_rating('KFC'))
+    template = loader.get_template('result.html')
+    plain_image = request.POST.get('plain_image', '')
+
+    context = {'plain_image' : plain_image}
+    return HttpResponse(template.render(context,request))
