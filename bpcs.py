@@ -315,26 +315,65 @@ class BPCS :
 		replaced = []
 		bitplaneLen = len(self.bitPlanes)
 		msgBitplaneLen = len(self.msgBitplanes)
+		hasInsertmsgBitplaneLen = false
+		hasInsertNameMsgBitplanesLen = false
+		hasInsertNameMsg = false
+		hasInsertMsg = false
+		hasInsertConjugateTable = false
+		hasInsertConjugateBitplaneLen = false
+		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
+		nameMsgBitplanesLen = len(nameMsgBitplanes)
+		nameMsgBitplaneIdx = 0
+		conjugateBitplaneLen = 0
+		if(msgBitplaneLen % 64 == 0):
+			conjugateBitplaneLen = msgBitplaneLen / 64
+		else :
+			conjugateBitplaneLen = (msgBitplaneLen / 64)+1
+		conjugateBitplaneIdx = 0
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
-
-						if bitplanes[i]['complexity'] > threshold and msgBitplaneIdx < len(self.msgBitplanes):
-							replaced.append(idx)
-							bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
-							msgBitplaneIdx += 1
-
-						if msgBitplaneIdx == msgBitplaneLen:
+						
+						if bitplanes[i]['complexity'] > threshold :
+							if not hasInsertmsgBitplaneLen :
+								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(msgBitplaneLen)
+								hasInsertmsgBitplaneLen = true
+							elif not hasInsertNameMsgBitplanesLen :
+								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(nameMsgBitplanesLen)
+								hasInsertNameMsgBitplanesLen = true
+							elif not hasInsertConjugateBitplaneLen :
+								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(conjugateBitplaneLen)
+								hasInsertConjugateBitplaneLen = true
+							elif not hasInsertNameMsg :
+								bitplanes[i]['bitplane'] = nameMsgBitplanes[nameMsgBitplaneIdx]
+								nameMsgBitplaneIdx+=1
+								if nameMsgBitplaneIdx >= nameMsgBitplanesLen :
+									hasInsertNameMsg = true
+							elif not hasInsertMsg :
+								replaced.append(idx)
+								bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
+								self.appendConjugateTable(0)
+								msgBitplaneIdx += 1
+								if (msgBitplaneIdx >= msgBitplaneLen) :
+									hasInsertMsg = true
+									self.makeFinalConjugateTable()
+							elif not hasInsertConjugateTable :
+								bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
+								conjugateBitplaneIdx+=1
+								if (conjugateBitplaneIdx >= conjugateBitplaneLen):
+									hasInsertConjugateTable = true
+						
+						if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 							break
-
-
 						i+=1
-					if msgBitplaneIdx == msgBitplaneLen:
+
+					if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 						break
-			if msgBitplaneIdx == msgBitplaneLen:
+
+			if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 				break
 			keyIdx+=1
 
