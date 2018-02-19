@@ -472,7 +472,19 @@ class BPCS :
 		keyLen = len(self.key)
 		keyIdx = 0
 		extracted = []
-		msgBitplaneNumber = 91
+		msgBitplaneNumber = 0
+		nameFileBitplaneNumber = 0
+		conjugateBitplaneNumber = 0
+		hasGetMsgBitplaneNumber = false
+		hasGetNameFileBitplaneNumber = false
+		hasGetConjugateBitplaneNumber = false
+		hasGetNameFile = false
+		hasGetMsg = false
+		hasGetConjugateTable = false
+		nameFileBitplaneIdx = 0
+		nameFileBitplanes = []
+		msgBitplaneIdx = 0
+		
 		bitplaneLen = len(self.bitPlanes)
 
 		while idx < bitplaneLen:
@@ -480,18 +492,47 @@ class BPCS :
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
-
+						
 						if bitplanes[i]['complexity'] > threshold:
-							extracted.append(idx)
-							self.msgBitplanes.append(bitplanes[i])
-
+							if not hasGetMsgBitplaneNumber :
+								msgBitplaneNumber = self.bitplaneToInt(bitplanes[i])
+								hasGetMsgBitplaneNumber = true
+							elif not hasGetNameFileBitplaneNumber :
+								nameFileBitplaneNumber = self.bitplaneToInt(bitplanes[i])
+								hasGetNameFileBitplaneNumber = true
+							elif not hasGetConjugateBitplaneNumber :
+								conjugateBitplaneNumber = self.bitplaneToInt(bitplanes[i])
+								hasGetConjugateBitplaneNumber = true
+							elif not hasGetNameFile :
+								nameFileBitplanes.append(bitplanes[i])
+								nameFileBitplaneIdx+=1
+								if nameFileBitplaneIdx >= nameFileBitplaneNumber:
+									self.fileMsgName = bitplanesToString(nameFileBitplanes)
+									hasGetNameFile = true
+							elif not hasGetConjugateTable :
+								startConjugateTableIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
+								conjugateTableIdx = 0
+								while conjugateTableIdx < conjugateBitplaneNumber :
+									self.conjugateTable.append(bitplanes[startConjugateTableIdx+conjugateTableIdx])
+									conjugateTableIdx+=1
+								hasGetConjugateTable = true
+							elif not hasGetMsg :
+								extracted.append(idx)
+								row = msgBitplaneIdx/64
+								col = msgBitplaneIdx%64
+								if(self.conjugateTable[row][col] == 0)
+									self.msgBitplanes.append(bitplanes[i])
+								msgBitplaneIdx+=1
+								if msgBitplaneIdx >= msgBitplaneNumber:
+									hasGetMsg=true
+							
 						i+=1
-						if len(self.msgBitplanes) >= msgBitplaneNumber:
+						if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
 							break
-					if len(self.msgBitplanes) >= msgBitplaneNumber:
+					if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
 						break
 
-			if len(self.msgBitplanes) >= msgBitplaneNumber:
+			if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
 				break
 			keyIdx += 1
 			if keyIdx == keyLen:
