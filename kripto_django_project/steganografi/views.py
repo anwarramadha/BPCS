@@ -18,7 +18,21 @@ def result(request):
     # print(restaurantRatingSystem.main_sentiment)
     # print(restaurantRatingSystem.find_rating('KFC'))
     template = loader.get_template('result.html')
-    plain_image = request.POST.get('plain_image', '')
+    filepath = request.POST.get('filepath', '')
+    key = request.POST.get('key', '')
+    threshold = request.POST.get('threshold', '')
+    if request.method == 'POST' and 'encrypt' in request.GET:
+    	encrypt = true
+    else:
+    	encrypt = false
+    if request.method == 'POST' and 'random' in request.GET:
+    	random = true
+    else:
+    	random = false
+    if request.method == 'POST' and 'convert-cgc' in request.GET:
+    	convert-cgc = true
+    else:
+    	convert-cgc = false
 
-    context = {'plain_image' : plain_image}
+    context = {'filepath' : filepath, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert-cgc' : convert-cgc}
     return HttpResponse(template.render(context,request))
