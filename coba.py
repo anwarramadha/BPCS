@@ -14,8 +14,16 @@ class Nyoba :
 			return False
 
 	# img1 and img2 have to be matrix and must have the same the exact same size
-	# def getMSE(img1, img2):
-	# 	for arr1 in img1:
+	def getMSE(img1, img2):
+		row = len(img1)
+		column = len(img1[0])
+		size = row*column
+		totalSelisihKuadrat = 0.0
+		for i in range(row):
+			for j in range(column):
+				selisih = img1[i][j]-img2[i][j]
+				totalSelisihKuadrat += math.pow(selisih,2)
+		return math.pow(totalSelisihKuadrat/size,0.5)
 
 
 	def getPSNR(rms, max_diff):
@@ -34,3 +42,4 @@ class Nyoba :
 
 Nyoba.printPSNR(0.00000001, 256)
 print(Nyoba.isImgSameSize([[1,0],[0,1]],[[2,3],[5,7]]))
+print(Nyoba.getMSE([[1,0],[0,1]],[[1,0],[0,5]]))
