@@ -6,8 +6,8 @@ import io
 import sys
 import extended_vigenere as cipher
 from PIL import Image
-import readline
-readline.parse_and_bind("tab: complete")
+# import readline
+# readline.parse_and_bind("tab: complete")
 global chessBoard, threshold, maxChange
 chessBoard = [i % 2 for i in xrange(64)]
 threshold = 0.3

@@ -9,6 +9,11 @@ def index(request):
     template = loader.get_template('index.html')
     return HttpResponse(template.render({}, request))
 
+def index_jelek(request):
+    module_dir = os.path.dirname(__file__)
+    template = loader.get_template('index_jelek.html')
+    return HttpResponse(template.render({}, request))
+
 def result(request):
     # print(restaurantRatingSystem.main_sentiment)
     # print(restaurantRatingSystem.find_rating('KFC'))
