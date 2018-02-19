@@ -26,10 +26,10 @@ def result(request):
     	encrypt = True
     random = False
     if request.method == 'POST' and 'random' in request.GET:
-    	random = True    	
+    	random = True
     convert_cgc = False
     if request.method == 'POST' and 'convert-cgc' in request.GET:
-    	convert_cgc = True
+    	convert_cgc = request.POST.get('convert_cgc', '')
 
     context = {'filepath' : filepath, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert-cgc' : convert_cgc}
     return HttpResponse(template.render(context,request))
