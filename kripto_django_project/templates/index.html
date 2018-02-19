@@ -39,7 +39,7 @@
     <body>
         <div class="center">
             <h1 align="center"> <font face="helvetica"> SteganoGrafi BPCS Implementation </font> </h2>
-            <form action="result" method="POST">
+            <form action="result" method="POST">{% csrf_token %}
                 Upload Plain Image <input type="file" name="plain_image">
             </form>
         </div>
