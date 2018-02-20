@@ -1,5 +1,10 @@
 import math
 import numpy
+from PIL import Image
+gambar = Image.open("lena512.bmp") #Can be many different formats.
+pixel = gambar.load()
+print gambar.size #Get the width and hight of the image for iterating over
+print pixel[0,0] #Get the RGBA Value of the a pixel of an image
 
 class Nyoba :
 	
@@ -40,6 +45,6 @@ class Nyoba :
 			print("Image berbeda dengan PSNR = ", end="")
 			print(psnr)
 
-Nyoba.printPSNR(0.00000001, 256)
-print(Nyoba.isImgSameSize([[1,0],[0,1]],[[2,3],[5,7]]))
-print(Nyoba.getMSE([[1,0],[0,1]],[[1,0],[0,5]]))
+# Nyoba.printPSNR(0.00000001, 256)
+# print(Nyoba.isImgSameSize([[1,0],[0,1]],[[2,3],[5,7]]))
+# print(Nyoba.getMSE([[1,0],[0,1]],[[1,0],[0,5]]))
