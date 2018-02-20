@@ -1,6 +1,7 @@
 import math
 import numpy
 from PIL import Image
+import time
 # gambar = Image.open("lena512.bmp") #Can be many different formats.
 # pixel = gambar.load()
 # print gambar.size #Get the width and hight of the image for iterating over
@@ -11,7 +12,39 @@ class ImageComparer :
 	def __init__(self, image1_name, image2_name):
 		self.image1_name = image1_name
 		self.image2_name = image2_name
-		
+		self.image1 = Image.open(self.image1_name)
+		self.image2 = Image.open(self.image2_name)
+		self.pixel1 = self.image1.load()
+		self.pixel2 = self.image2.load()
+
+	def isImgSameSize(self):
+		if self.image1.size[0] == self.image2.size[0] and self.image1.size[1] == self.image2.size[1]:
+			return True
+		else:
+			return False
+
+	def isImgSameColorType(self):
+		if isinstance(self.pixel1[0,0],int) == isinstance(self.pixel2[0,0],int): # harus sama2 warna atau sama2 item putih
+			return True
+		else:
+			return False
+
+if __name__ == "__main__":
+	# INPUT
+	filename1 = raw_input("Image 1 name: ")
+	filename2 = raw_input("Image 2 name: ")
+
+	# PROSES
+	start_time = time.time()
+	comparer = ImageComparer(filename1, filename2)
+	print(comparer.isImgSameColorType())
+	print(comparer.image1.size[0])
+	print(comparer.pixel2[0,0])
+
+	# OUTPUT
+	print("Run time")
+	print("--- %s seconds ---" % (time.time() - start_time))
+
 # class Nyoba :
 	
 # 	def __init__(self):
