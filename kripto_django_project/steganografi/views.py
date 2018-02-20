@@ -61,5 +61,8 @@ def result(request):
 
     bpcs.writeImage()
 
-    context = {'image_name' : image_name, 'image_url' : image_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
+    stego_name = 'stego_' + image_name
+    stego_url = "/media/" + stego_name
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
     return HttpResponse(template.render(context,request))
