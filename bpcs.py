@@ -324,12 +324,21 @@ class BPCS :
 		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
 		nameMsgBitplanesLen = len(nameMsgBitplanes)
 		nameMsgBitplaneIdx = 0
-		conjugateBitplaneLen = 0
-		if(msgBitplaneLen % 64 == 0):
-			conjugateBitplaneLen = msgBitplaneLen / 64
-		else :
-			conjugateBitplaneLen = (msgBitplaneLen / 64)+1
 		conjugateBitplaneIdx = 0
+		conjugateBitplaneNeeded = 0
+		conjugateTableTemp = []
+		conjugateBitplaneLen = 0
+		for i in range(1 + 1 + 1 + nameMsgBitplanesLen + msgBitplaneLen):
+			self.appendConjugateTableFunction(conjugateTableTemp,0)
+		conjugateBitplaneLen = len(conjugateTableTemp)
+		idxTemp = 0
+		while idxTemp < conjugateBitplaneLen :
+			conjugateBitplaneLen = len(conjugateTableTemp)
+			conjugateBitplaneNeededTemp = conjugateBitplaneLen - 1 - idxTemp
+			if (len(conjugateTableTemp[-1]) % 64 <= conjugateBitplaneNeededTemp):
+				conjugateBitplaneLen += 1
+			idxTemp+=1
+			self.appendConjugateTableFunction(conjugateTableTemp,1)
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
@@ -339,42 +348,80 @@ class BPCS :
 						
 						if bitplanes[i]['complexity'] > threshold :
 							if not hasInsertmsgBitplaneLen :
-								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(msgBitplaneLen)
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+									self.appendConjugateTable(1)
+								else:
+									self.appendConjugateTable(0)
 								print("embed",idx,i)
 								print("hasInsertmsgBitplaneLen",msgBitplaneLen)
 								hasInsertmsgBitplaneLen = True
 							elif not hasInsertNameMsgBitplanesLen :
-								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(nameMsgBitplanesLen)
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+									self.appendConjugateTable(1)
+								else:
+									self.appendConjugateTable(0)
 								print("embed",idx,i)
 								print("hasInsertNameMsgBitplanesLen",nameMsgBitplanesLen)
 								hasInsertNameMsgBitplanesLen = True
 							elif not hasInsertConjugateBitplaneLen :
-								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(conjugateBitplaneLen)
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+									self.appendConjugateTable(1)
+								else:
+									self.appendConjugateTable(0)
 								print("embed",idx,i)
 								print("hasInsertConjugateBitplaneLen",conjugateBitplaneLen)
 								hasInsertConjugateBitplaneLen = True
 							elif not hasInsertNameMsg :
-								replaced.append(idx)
 								bitplanes[i]['bitplane'] = nameMsgBitplanes[nameMsgBitplaneIdx]
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+									self.appendConjugateTable(1)
+								else:
+									self.appendConjugateTable(0)
 								nameMsgBitplaneIdx+=1
 								if nameMsgBitplaneIdx >= nameMsgBitplanesLen :
 									hasInsertNameMsg = True
 							elif not hasInsertMsg :
-								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
-								self.appendConjugateTable(0)
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+									self.appendConjugateTable(1)
+								else:
+									self.appendConjugateTable(0)
 								msgBitplaneIdx += 1
 								if (msgBitplaneIdx >= msgBitplaneLen) :
 									hasInsertMsg = True
-									self.makeFinalConjugateTable()
 							elif not hasInsertConjugateTable :
-								replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
-								conjugateBitplaneIdx+=1
-								if (conjugateBitplaneIdx >= conjugateBitplaneLen):
+								conjugateBitplaneLen = len(self.conjugateTable)
+								conjugateBitplaneNeeded = conjugateBitplaneLen - 1 - conjugateBitplaneIdx
+								if (len(self.conjugateTable[-1]) % 64 <= conjugateBitplaneNeeded):
+									conjugateBitplaneLen += 1
+								if(conjugateBitplaneIdx < (conjugateBitplaneLen-1)):
+									bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
+									if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+										bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
+										self.appendConjugateTable(1)
+									else:
+										self.appendConjugateTable(0)
+									conjugateBitplaneIdx+=1
+								if (conjugateBitplaneIdx == (conjugateBitplaneLen-1)):
+									complexLastConjugateBitplane = self.conjugateTable
+									self.appendConjugateTableFunction(complexLastConjugateBitplane,0)
+									self.makeFinalConjugateTableFunction(complexLastConjugateBitplane)
+									if(self.calculateComplexity(complexLastConjugateBitplane[-1]) >= threshold):
+										bitplanes[i]['bitplane'] = complexLastConjugateBitplane[-1]
+									else:
+										self.appendConjugateTable(1)
+										self.makeFinalConjugateTable()
+										bitplanes[i]['bitplane'] = self.conjugateTable[-1]
+									conjugateBitplaneIdx+=1
+								elif (conjugateBitplaneIdx >= conjugateBitplaneLen):
 									hasInsertConjugateTable = True
 						
 						if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
@@ -383,7 +430,7 @@ class BPCS :
 
 					if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 						break
-
+				replaced.append(idx)
 			if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 				break
 			keyIdx+=1
@@ -404,11 +451,25 @@ class BPCS :
 		else:
 			self.conjugateTable[-1].append(bit)
 
+	def appendConjugateTableFunction(self,conjugateTable,bit):
+		if (len(conjugateTable) == 0):
+			conjugateTable.append([bit])
+		elif(len(conjugateTable[-1])==64):
+			conjugateTable.append([bit])
+		else:
+			conjugateTable[-1].append(bit)
+
 	def makeFinalConjugateTable(self):
 		lenghtOfLastBitplane = len(self.conjugateTable[-1])
 		if(lenghtOfLastBitplane!=64):
 			for i in range(64-lenghtOfLastBitplane):
 				self.conjugateTable[-1].append(0)
+	
+	def makeFinalConjugateTableFunction(self, conjugateTable):
+		lenghtOfLastBitplane = len(conjugateTable[-1])
+		if(lenghtOfLastBitplane!=64):
+			for i in range(64-lenghtOfLastBitplane):
+				conjugateTable[-1].append(0)
 
 	def createImage(self):
 		idx = 0
