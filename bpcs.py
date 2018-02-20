@@ -357,7 +357,6 @@ class BPCS :
 
 			idx += self.seed(keyIdx)
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
-				print(idx)
 				idx = 0
 
 
