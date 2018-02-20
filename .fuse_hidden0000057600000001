@@ -4,7 +4,6 @@ import time
 import binascii
 import io
 import sys
-import os
 import extended_vigenere as cipher
 from PIL import Image
 import readline
@@ -23,10 +22,8 @@ class BPCS :
 		self.blocks = []
 		self.bitPlanes = []
 		self.fileMsgName = filename
-		self.numberOfMsgPlane = 0
 		self.msgBlocks = []
 		self.notAllowed = []
-		self.conjugateTable = []
 
 	# def convertPBC2CGC(self):
 	# 	self.pbc = self.image.load()
@@ -42,7 +39,13 @@ class BPCS :
 	# 				if isinstance(self.pbc[i, j], int):
 	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
 	# 				else:
-	# 					pass
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
 	# 			j+=1
 	# 		i+=1
 
@@ -60,7 +63,13 @@ class BPCS :
 	# 				if isinstance(px[i, j], int):
 	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
 	# 				else:
-	# 					pass
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = px[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
 	# 			j+=1
 	# 		i+=1
 
@@ -195,12 +204,6 @@ class BPCS :
 			return self.msglen + (8 - self.msglen % 8) + 1
 
 	def readMsg(self):
-		numberOfBit =  os.stat(self.fileMsgName).st_size*8
-		modular64OfNumber = numberOfBit%64
-		if(modular64OfNumber == 0):
-			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64
-		else:
-			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64+1
 		file = open(self.fileMsgName, 'r')
 		self.message = file.read()
 		file.close()
@@ -229,65 +232,6 @@ class BPCS :
 			bitplane[i] ^= chessBoard[i]
 			i+=1
 
-	#Untuk nama file (Ascii 8 bit)
-	def intToBitplane(self,number):
-		bitplane = []
-		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
-		for c in oct(int(number))[1:]:
-			bitplane+=t[c]
-		remainder = 8 - len(bitplane)%8
-		if (remainder != 0):
-			for i in range(remainder):
-				bitplane = [0]+bitplane
-		return bitplane
-	
-	#Untuk ukuran file (batas maksimal 64 bit)
-	def intToBitplaneExpanded(self,number):
-		bitplane = []
-		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
-		for c in oct(int(number))[1:]:
-			bitplane+=t[c]
-		remainder = 64 - len(bitplane)%64
-		if (remainder != 0):
-			for i in range(remainder):
-				bitplane = [0]+bitplane
-		return bitplane
-
-	def bitplaneToInt(self, bitplane):
-		stringOfBit = ''
-		for bit in bitplane:
-			stringOfBit += str(bit)
-		return int(stringOfBit,2)
-
-	def stringToBitplanes(self, string):
-		bitplanes = []
-		bitplane = []
-		length = 0
-		for char in string:
-			bitplane += self.intToBitplane(ord(char))
-			length+=1
-			if(length == 8):
-				bitplanes.append(bitplane)
-				length=0
-		return bitplanes
-
-	def bitplanesToString(self, bitplanes):
-		string = ''
-		char = ''
-		length = 0
-		bitOfChar = ''
-		for bitplane in bitplanes:
-			for bit in bitplane:
-				bitOfChar += str(bit)
-				length += 1
-				if(length == 8):
-					char = unichr(int(bitOfChar,2))
-					string += char
-					char = ''
-					bitOfChar = ''
-					length = 0
-		return string
-	
 	def createMsgBitplane(self):
 		self.msgBitplanes = []
 
@@ -315,76 +259,26 @@ class BPCS :
 		replaced = []
 		bitplaneLen = len(self.bitPlanes)
 		msgBitplaneLen = len(self.msgBitplanes)
-		hasInsertmsgBitplaneLen = False
-		hasInsertNameMsgBitplanesLen = False
-		hasInsertNameMsg = False
-		hasInsertMsg = False
-		hasInsertConjugateTable = False
-		hasInsertConjugateBitplaneLen = False
-		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
-		nameMsgBitplanesLen = len(nameMsgBitplanes)
-		nameMsgBitplaneIdx = 0
-		conjugateBitplaneLen = 0
-		if(msgBitplaneLen % 64 == 0):
-			conjugateBitplaneLen = msgBitplaneLen / 64
-		else :
-			conjugateBitplaneLen = (msgBitplaneLen / 64)+1
-		conjugateBitplaneIdx = 0
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
-						
-						if bitplanes[i]['complexity'] > threshold :
-							if not hasInsertmsgBitplaneLen :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(msgBitplaneLen)
-								print("embed",idx,i)
-								print("hasInsertmsgBitplaneLen",msgBitplaneLen)
-								hasInsertmsgBitplaneLen = True
-							elif not hasInsertNameMsgBitplanesLen :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(nameMsgBitplanesLen)
-								print("embed",idx,i)
-								print("hasInsertNameMsgBitplanesLen",nameMsgBitplanesLen)
-								hasInsertNameMsgBitplanesLen = True
-							elif not hasInsertConjugateBitplaneLen :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(conjugateBitplaneLen)
-								print("embed",idx,i)
-								print("hasInsertConjugateBitplaneLen",conjugateBitplaneLen)
-								hasInsertConjugateBitplaneLen = True
-							elif not hasInsertNameMsg :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = nameMsgBitplanes[nameMsgBitplaneIdx]
-								nameMsgBitplaneIdx+=1
-								if nameMsgBitplaneIdx >= nameMsgBitplanesLen :
-									hasInsertNameMsg = True
-							elif not hasInsertMsg :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
-								self.appendConjugateTable(0)
-								msgBitplaneIdx += 1
-								if (msgBitplaneIdx >= msgBitplaneLen) :
-									hasInsertMsg = True
-									self.makeFinalConjugateTable()
-							elif not hasInsertConjugateTable :
-								# replaced.append(idx)
-								bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
-								conjugateBitplaneIdx+=1
-								if (conjugateBitplaneIdx >= conjugateBitplaneLen):
-									hasInsertConjugateTable = True
+
+						if bitplanes[i]['complexity'] > threshold and msgBitplaneIdx < len(self.msgBitplanes):
 							replaced.append(idx)
-						if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
+							bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
+							msgBitplaneIdx += 1
+
+						if msgBitplaneIdx == msgBitplaneLen:
 							break
+
+
 						i+=1
-
-					if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
+					if msgBitplaneIdx == msgBitplaneLen:
 						break
-
-			if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
+			if msgBitplaneIdx == msgBitplaneLen:
 				break
 			keyIdx+=1
 
@@ -395,20 +289,7 @@ class BPCS :
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
 				idx = self.seed(keyIdx)
 
-	#Model tabel berupa bitplanes
-	def appendConjugateTable(self, bit):
-		if (len(self.conjugateTable) == 0):
-			self.conjugateTable.append([bit])
-		elif(len(self.conjugateTable[-1])==64):
-			self.conjugateTable.append([bit])
-		else:
-			self.conjugateTable[-1].append(bit)
 
-	def makeFinalConjugateTable(self):
-		lenghtOfLastBitplane = len(self.conjugateTable[-1])
-		if(lenghtOfLastBitplane!=64):
-			for i in range(64-lenghtOfLastBitplane):
-				self.conjugateTable[-1].append(0)
 
 	def createImage(self):
 		idx = 0
@@ -475,6 +356,7 @@ class BPCS :
 			col = limit
 			i+=1
 
+		# self.convertCGC2PBC(new)
 		new.save('stego_'+self.imagePath, self.image.format)
 
 	def extracting(self):
@@ -483,19 +365,7 @@ class BPCS :
 		keyLen = len(self.key)
 		keyIdx = 0
 		extracted = []
-		msgBitplaneNumber = 0
-		nameFileBitplaneNumber = 0
-		conjugateBitplaneNumber = 0
-		hasGetMsgBitplaneNumber = False
-		hasGetNameFileBitplaneNumber = False
-		hasGetConjugateBitplaneNumber = False
-		hasGetNameFile = False
-		hasGetMsg = False
-		hasGetConjugateTable = False
-		nameFileBitplaneIdx = 0
-		nameFileBitplanes = []
-		msgBitplaneIdx = 0
-		
+		msgBitplaneNumber = 91
 		bitplaneLen = len(self.bitPlanes)
 
 		while idx < bitplaneLen:
@@ -503,61 +373,18 @@ class BPCS :
 				for bitplanes in self.bitPlanes[idx]: # 1 for grayscale, 3 for rgb
 					i = 0
 					while i < len(bitplanes): 
-						
+
 						if bitplanes[i]['complexity'] > threshold:
-							if not hasGetMsgBitplaneNumber :
-								extracted.append(idx)
-								msgBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
-								print("ekstraksi",idx,i)
-								print('ukuran msg', msgBitplaneNumber)
-								hasGetMsgBitplaneNumber = True
-							elif not hasGetNameFileBitplaneNumber :
-								extracted.append(idx)
-								nameFileBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
-								print("ekstraksi",idx,i)
-								print('ukuran nama file', nameFileBitplaneNumber)
-								hasGetNameFileBitplaneNumber = True
-							elif not hasGetConjugateBitplaneNumber :
-								extracted.append(idx)
-								conjugateBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
-								print("ekstraksi",idx,i)
-								print('ukuran tabel konjugasi', conjugateBitplaneNumber)
-								hasGetConjugateBitplaneNumber = True
-							elif not hasGetNameFile :
-								extracted.append(idx)
-								nameFileBitplanes.append(bitplanes[i]['bitplane'])
-								nameFileBitplaneIdx+=1
-								if nameFileBitplaneIdx >= nameFileBitplaneNumber:
-									self.fileMsgName = bitplanesToString(nameFileBitplanes)
-									print('nama msg', self.fileMsgName)
-									hasGetNameFile = True
-							elif not hasGetConjugateTable :
-								extracted.append(idx)
-								startConjugateTableIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
-								conjugateTableIdx = 0
-								while conjugateTableIdx < conjugateBitplaneNumber :
-									self.conjugateTable.append(bitplanes[startConjugateTableIdx+conjugateTableIdx]['bitplane'])
-									conjugateTableIdx+=1
-								print('tabel konjugasi')
-								hasGetConjugateTable = True
-							elif not hasGetMsg :
-								extracted.append(idx)
-								row = msgBitplaneIdx/64
-								col = msgBitplaneIdx%64
-								if(self.conjugateTable[row][col] == 0):
-									self.msgBitplanes.append(bitplanes[i])
-								msgBitplaneIdx+=1
-								if msgBitplaneIdx >= msgBitplaneNumber:
-									print('pesan')
-									hasGetMsg=True
-							
+							extracted.append(idx)
+							self.msgBitplanes.append(bitplanes[i])
+
 						i+=1
-						if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
+						if len(self.msgBitplanes) >= msgBitplaneNumber:
 							break
-					if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
+					if len(self.msgBitplanes) >= msgBitplaneNumber:
 						break
 
-			if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
+			if len(self.msgBitplanes) >= msgBitplaneNumber:
 				break
 			keyIdx += 1
 			if keyIdx == keyLen:
@@ -587,7 +414,6 @@ class BPCS :
 
 
 if __name__ == "__main__":
-	
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
 	key = raw_input("key: ")
@@ -611,13 +437,13 @@ if __name__ == "__main__":
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
-	bpcs = BPCS('stego_'+filename, 'example.txt')
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.setStegoKey(key)
-	bpcs.extracting()
-	bpcs.joinMessage()
-	bpcs.decryptMsg()
-	print(bpcs.message)
+	bpcs1 = BPCS('stego_'+filename, 'example.txt')
+	bpcs1.dividePixels()
+	bpcs1.createBitplanes()
+	bpcs1.setStegoKey(key)
+	bpcs1.extracting()
+	bpcs1.joinMessage()
+	bpcs1.decryptMsg()
+	print(bpcs1.message)
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
