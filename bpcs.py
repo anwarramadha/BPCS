@@ -39,7 +39,13 @@ class BPCS :
 	# 				if isinstance(self.pbc[i, j], int):
 	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
 	# 				else:
-	# 					pass
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
 	# 			j+=1
 	# 		i+=1
 
@@ -57,7 +63,13 @@ class BPCS :
 	# 				if isinstance(px[i, j], int):
 	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
 	# 				else:
-	# 					pass
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = px[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
 	# 			j+=1
 	# 		i+=1
 
@@ -344,6 +356,7 @@ class BPCS :
 			col = limit
 			i+=1
 
+		# self.convertCGC2PBC(new)
 		new.save('stego_'+self.imagePath, self.image.format)
 
 	def extracting(self):
@@ -424,13 +437,13 @@ if __name__ == "__main__":
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
-	bpcs = BPCS('stego_'+filename, 'example.txt')
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.setStegoKey(key)
-	bpcs.extracting()
-	bpcs.joinMessage()
-	bpcs.decryptMsg()
-	print(bpcs.message)
+	bpcs1 = BPCS('stego_'+filename, 'example.txt')
+	bpcs1.dividePixels()
+	bpcs1.createBitplanes()
+	bpcs1.setStegoKey(key)
+	bpcs1.extracting()
+	bpcs1.joinMessage()
+	bpcs1.decryptMsg()
+	print(bpcs1.message)
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
