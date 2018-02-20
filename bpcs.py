@@ -31,86 +31,6 @@ class BPCS :
 		self.conjugateTable = []
 		self.msgLen = 0
 
-	# def convertPBC2CGC(self):
-	# 	self.pbc = self.image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	image = self.create_image(width, height)
-	# 	px = image.load()
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
-	# 	return image
-
-	# def convertCGC2PBC(self):
-	# 	self.pbc = self.image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	image = self.create_image(width, height)
-	# 	px = image.load()
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ px[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ px[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
-	# 	return image
-
-	# def convertCGC2PBC(self, image):
-	# 	px = image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(px[i, j], int):
-	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = px[i, j][k] ^ self.pbc[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
 	def convertPBC2CGC(self, bitplanes):
 		self.pbcBitplanes.append(bitplanes)
 		i = 0
@@ -144,6 +64,7 @@ class BPCS :
 						k+=1
 				j+=1
 			i+=1
+
 
 	def defineBlockSize(self):
 		self.width, self.height = self.image.size
@@ -257,7 +178,10 @@ class BPCS :
 				bitplaneForAllColor.append(bitplaneForEachColor)
 			
 				i+=1
-			self.convertPBC2CGC(bitplaneForAllColor)
+
+			if self.cgc:
+				self.convertPBC2CGC(bitplaneForAllColor)
+
 			self.bitPlanes.append(bitplaneForAllColor)
 			
 
@@ -265,10 +189,16 @@ class BPCS :
 		self.key = key
 
 	def encryptMsg(self):
-		self.message = cipher.encrypt(self.message, self.key)
+		if len(self.key) == 0:
+			self.message = cipher.encrypt(self.message, 'a')
+		else:
+			self.message = cipher.encrypt(self.message, self.key)
 
 	def decryptMsg(self):
-		self.message = cipher.decrypt(self.message, self.key)
+		if len(self.key) == 0:
+			self.message = cipher.decrypt(self.message, 'a')
+		else:
+			self.message = cipher.decrypt(self.message, self.key)
 
 	def defineMsgLen(self):
 		if self.msglen % 8 == 0:
@@ -401,9 +331,11 @@ class BPCS :
 			self.msgBitplanes.append(bitplane)
 
 	def seed(self, idx):
-		if len(self.key) > 0:
+		if self.random:
+			if len(self.key) == 0:
+				return cipher.extended_ascii.index('a') % 10
 			return cipher.extended_ascii.index(self.key[idx]) % 10
-		elif len(self.key) == 0 or self.seq == 1:
+		else:
 			return 1
 
 	def embedding(self):
@@ -540,7 +472,7 @@ class BPCS :
 
 			idx += self.seed(keyIdx)
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
-				idx = self.seed(keyIdx)
+				idx = 0
 		#print(arrayOfPosition)
 
 	#Model tabel berupa bitplanes
@@ -578,7 +510,10 @@ class BPCS :
 			i = 0
 			rgb = []
 			blockLen = len(self.bitPlanes[idx])
-			self.convertCGC2PBC(self.bitPlanes[idx], self.pbcBitplanes[idx])
+
+			if self.cgc:
+				self.convertCGC2PBC(self.bitPlanes[idx], self.pbcBitplanes[idx])
+
 			while i < 64:
 				j = 0
 				values = []
@@ -716,13 +651,14 @@ class BPCS :
 
 			if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetPosition:
 				break
+
 			keyIdx += 1
 			if keyIdx == keyLen:
 				keyIdx = 0
 
 			idx += self.seed(keyIdx)
 			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
-				idx = self.seed(keyIdx)
+				idx = 0
 		idx=0
 		#print("posisi",arrayOfPosition)
 		while (idx < len(arrayOfPosition)):
@@ -791,7 +727,6 @@ class BPCS :
 	def joinMessage(self):
 		bits = []
 		bit = ''
-		msglen = 725
 		for bitplane in self.msgBitplanes:
 
 			for b in bitplane:
@@ -803,7 +738,7 @@ class BPCS :
 		self.message = ''
 		for bit in bits:
 			self.message += chr(int(bit, 2))
-			if len(self.message) == 725:
+			if len(self.message) == self.msgLen:
 				break
 
 	def createExtractedFile(self):
@@ -828,6 +763,10 @@ class BPCS :
 	def payloadBit(self):
 		return payloadByte*8
 
+	def option(self, is_cgc, is_random):
+		self.random = is_random
+		self.cgc = is_cgc
+
 
 
 if __name__ == "__main__":
@@ -837,6 +776,7 @@ if __name__ == "__main__":
 	key = raw_input("key: ")
 
 	start_time = time.time()
+	bpcs.option(False, True) # (is_cgc, is_random)
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
 	bpcs.readMsg()
@@ -855,14 +795,15 @@ if __name__ == "__main__":
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
-	bpcs = BPCS('stego_'+filename, 'mple.txt')
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.setStegoKey(key)
-	bpcs.extracting()
-	bpcs.joinMessage()
-	bpcs.decryptMsg()
-	print(bpcs.message)
-	bpcs.createExtractedFile()
+	extract = BPCS('stego_'+filename, 'mple.txt')
+	extract.option(True, True)
+	extract.dividePixels()
+	extract.createBitplanes()
+	extract.setStegoKey(key)
+	extract.extracting()
+	extract.joinMessage()
+	extract.decryptMsg()
+	print(extract.message)
+	extract.createExtractedFile()
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
