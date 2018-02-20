@@ -315,12 +315,12 @@ class BPCS :
 		replaced = []
 		bitplaneLen = len(self.bitPlanes)
 		msgBitplaneLen = len(self.msgBitplanes)
-		hasInsertmsgBitplaneLen = false
-		hasInsertNameMsgBitplanesLen = false
-		hasInsertNameMsg = false
-		hasInsertMsg = false
-		hasInsertConjugateTable = false
-		hasInsertConjugateBitplaneLen = false
+		hasInsertmsgBitplaneLen = False
+		hasInsertNameMsgBitplanesLen = False
+		hasInsertNameMsg = False
+		hasInsertMsg = False
+		hasInsertConjugateTable = False
+		hasInsertConjugateBitplaneLen = False
 		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
 		nameMsgBitplanesLen = len(nameMsgBitplanes)
 		nameMsgBitplaneIdx = 0
@@ -339,32 +339,43 @@ class BPCS :
 						
 						if bitplanes[i]['complexity'] > threshold :
 							if not hasInsertmsgBitplaneLen :
+								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(msgBitplaneLen)
-								hasInsertmsgBitplaneLen = true
+								print("embed",idx,i)
+								print("hasInsertmsgBitplaneLen",msgBitplaneLen)
+								hasInsertmsgBitplaneLen = True
 							elif not hasInsertNameMsgBitplanesLen :
+								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(nameMsgBitplanesLen)
-								hasInsertNameMsgBitplanesLen = true
+								print("embed",idx,i)
+								print("hasInsertNameMsgBitplanesLen",nameMsgBitplanesLen)
+								hasInsertNameMsgBitplanesLen = True
 							elif not hasInsertConjugateBitplaneLen :
+								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(conjugateBitplaneLen)
-								hasInsertConjugateBitplaneLen = true
+								print("embed",idx,i)
+								print("hasInsertConjugateBitplaneLen",conjugateBitplaneLen)
+								hasInsertConjugateBitplaneLen = True
 							elif not hasInsertNameMsg :
+								replaced.append(idx)
 								bitplanes[i]['bitplane'] = nameMsgBitplanes[nameMsgBitplaneIdx]
 								nameMsgBitplaneIdx+=1
 								if nameMsgBitplaneIdx >= nameMsgBitplanesLen :
-									hasInsertNameMsg = true
+									hasInsertNameMsg = True
 							elif not hasInsertMsg :
 								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
 								self.appendConjugateTable(0)
 								msgBitplaneIdx += 1
 								if (msgBitplaneIdx >= msgBitplaneLen) :
-									hasInsertMsg = true
+									hasInsertMsg = True
 									self.makeFinalConjugateTable()
 							elif not hasInsertConjugateTable :
+								replaced.append(idx)
 								bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
 								conjugateBitplaneIdx+=1
 								if (conjugateBitplaneIdx >= conjugateBitplaneLen):
-									hasInsertConjugateTable = true
+									hasInsertConjugateTable = True
 						
 						if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
 							break
@@ -475,12 +486,12 @@ class BPCS :
 		msgBitplaneNumber = 0
 		nameFileBitplaneNumber = 0
 		conjugateBitplaneNumber = 0
-		hasGetMsgBitplaneNumber = false
-		hasGetNameFileBitplaneNumber = false
-		hasGetConjugateBitplaneNumber = false
-		hasGetNameFile = false
-		hasGetMsg = false
-		hasGetConjugateTable = false
+		hasGetMsgBitplaneNumber = False
+		hasGetNameFileBitplaneNumber = False
+		hasGetConjugateBitplaneNumber = False
+		hasGetNameFile = False
+		hasGetMsg = False
+		hasGetConjugateTable = False
 		nameFileBitplaneIdx = 0
 		nameFileBitplanes = []
 		msgBitplaneIdx = 0
@@ -495,36 +506,50 @@ class BPCS :
 						
 						if bitplanes[i]['complexity'] > threshold:
 							if not hasGetMsgBitplaneNumber :
-								msgBitplaneNumber = self.bitplaneToInt(bitplanes[i])
-								hasGetMsgBitplaneNumber = true
+								extracted.append(idx)
+								msgBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								print("ekstraksi",idx,i)
+								print('ukuran msg', msgBitplaneNumber)
+								hasGetMsgBitplaneNumber = True
 							elif not hasGetNameFileBitplaneNumber :
-								nameFileBitplaneNumber = self.bitplaneToInt(bitplanes[i])
-								hasGetNameFileBitplaneNumber = true
+								extracted.append(idx)
+								nameFileBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								print("ekstraksi",idx,i)
+								print('ukuran nama file', nameFileBitplaneNumber)
+								hasGetNameFileBitplaneNumber = True
 							elif not hasGetConjugateBitplaneNumber :
-								conjugateBitplaneNumber = self.bitplaneToInt(bitplanes[i])
-								hasGetConjugateBitplaneNumber = true
+								extracted.append(idx)
+								conjugateBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								print("ekstraksi",idx,i)
+								print('ukuran tabel konjugasi', conjugateBitplaneNumber)
+								hasGetConjugateBitplaneNumber = True
 							elif not hasGetNameFile :
-								nameFileBitplanes.append(bitplanes[i])
+								extracted.append(idx)
+								nameFileBitplanes.append(bitplanes[i]['bitplane'])
 								nameFileBitplaneIdx+=1
 								if nameFileBitplaneIdx >= nameFileBitplaneNumber:
 									self.fileMsgName = bitplanesToString(nameFileBitplanes)
-									hasGetNameFile = true
+									print('nama msg', self.fileMsgName)
+									hasGetNameFile = True
 							elif not hasGetConjugateTable :
+								extracted.append(idx)
 								startConjugateTableIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
 								conjugateTableIdx = 0
 								while conjugateTableIdx < conjugateBitplaneNumber :
-									self.conjugateTable.append(bitplanes[startConjugateTableIdx+conjugateTableIdx])
+									self.conjugateTable.append(bitplanes[startConjugateTableIdx+conjugateTableIdx]['bitplane'])
 									conjugateTableIdx+=1
-								hasGetConjugateTable = true
+								print('tabel konjugasi')
+								hasGetConjugateTable = True
 							elif not hasGetMsg :
 								extracted.append(idx)
 								row = msgBitplaneIdx/64
 								col = msgBitplaneIdx%64
-								if(self.conjugateTable[row][col] == 0)
+								if(self.conjugateTable[row][col] == 0):
 									self.msgBitplanes.append(bitplanes[i])
 								msgBitplaneIdx+=1
 								if msgBitplaneIdx >= msgBitplaneNumber:
-									hasGetMsg=true
+									print('pesan')
+									hasGetMsg=True
 							
 						i+=1
 						if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetNameFile and hasGetConjugateTable and hasGetMsg:
