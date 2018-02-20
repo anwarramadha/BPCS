@@ -434,15 +434,8 @@ class BPCS :
 		arrayOfPosition = []
 		for i in range(1 + 1 + 1 + nameMsgBitplanesLen + msgBitplaneLen):
 			self.appendConjugateTableFunction(conjugateTableTemp,0)
+		self.makeFinalConjugateTableFunction(conjugateTableTemp)
 		conjugateBitplaneLen = len(conjugateTableTemp)
-		idxTemp = 0
-		while idxTemp < conjugateBitplaneLen :
-			conjugateBitplaneLen = len(conjugateTableTemp)
-			conjugateBitplaneNeededTemp = conjugateBitplaneLen - 1 - idxTemp
-			if (len(conjugateTableTemp[-1]) % 64 <= conjugateBitplaneNeededTemp):
-				conjugateBitplaneLen += 1
-			idxTemp+=1
-			self.appendConjugateTableFunction(conjugateTableTemp,1)
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
