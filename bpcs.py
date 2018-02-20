@@ -683,7 +683,7 @@ class BPCS :
 					print('nama msg', self.fileMsgName)
 					hasGetNameFile = True
 			elif not hasGetMsg :
-				startConjugateTableIdx = 1+1+1+nameFileBitplaneNumber
+				startIdx = 1+1+1+nameFileBitplaneNumber
 				rowCon = (startIdx+msgBitplaneIdx)/64
 				colCon = (startIdx+msgBitplaneIdx)%64
 				row = arrayOfPosition[startIdx+msgBitplaneIdx][0]
@@ -706,7 +706,7 @@ class BPCS :
 		for bitplane in self.msgBitplanes:
 
 			i = 1
-			for b in bitplane['bitplane']:
+			for b in bitplane:
 				bit += str(b)
 				if i % 8 == 0:
 					bits.append(bit)
