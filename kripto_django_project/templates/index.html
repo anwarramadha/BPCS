@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <style> 
+            input[type=file] {
+                width: 500px;
+                box-sizing: border-box;
+                border: 2px solid #ccc;
+                border-radius: 4px;
+                font-size: 16px;
+                background-color: white;
+                background-image: url('searchicon.png');
+                background-position: 10px 10px; 
+                background-repeat: no-repeat;
+                padding: 12px 20px 12px 40px;
+                -webkit-transition: width 0.4s ease-in-out;
+                transition: width 0.4s ease-in-out;
+                text-align: center;
+            }
+
+            .center {
+                position: fixed; /* or absolute */
+                top: 50%;
+                left: 50%;
+                /* bring your own prefixes */
+                transform: translate(-50%, -50%);
+            }​
+
+            button{
+                
+            }
+
+            div{
+                text-align:center;
+            }
+        </style>
+    </head>
+    <title>RestauRate</title>
+    <body>
+        <div class="center">
+            <h1 align="center"> <font face="helvetica"> SteganoGrafi BPCS Implementation </font> </h2>
+            <form action="result" method="POST">{% csrf_token %}
+                Upload Plain Image <input type="file" name="plain_image">
+            </form>
+        </div>
+    </body>
+</html>
