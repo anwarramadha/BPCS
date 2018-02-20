@@ -3,6 +3,7 @@ from django.template import loader
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from bpcs import BPCS
+from ImageComparer import ImageComparer
 import os
 from django.conf import settings
 # from django.conf.settings import MEDIA_ROOT
@@ -69,7 +70,15 @@ def result(request):
     stego_name = 'stego_' + image_name
     stego_url = "/media/" + stego_name
 
-    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
+    # PSNR
+    filename1 = os.path.join(settings.MEDIA_ROOT, image_name)
+    filename2 = os.path.join(settings.MEDIA_ROOT, stego_name)
+    comparer = ImageComparer(filename1, filename2)
+    psnr = comparer.getPSNR()
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name,
+        'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random,
+        'convert_cgc' : convert_cgc, 'psnr' : psnr}
     return HttpResponse(template.render(context,request))
 
 def extract(request):
