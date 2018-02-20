@@ -411,16 +411,22 @@ class BPCS :
 		for bit in bits:
 			self.message += chr(int(bit, 2))
 
-	def payload(self):
+	def payloadByte(self):
 		# self.bitPlanes harus sudah terisi
-		count = 0
+		slotBitPlane = 0
 		for a in self.bitPlanes:
 			for b in a:
 				for c in b:
 					if c['complexity']>threshold:
-						count += 1
+						slotBitPlane += 1
 
-		return count
+		slotBitPlane -= 50 # penyimpanan filename, extension, file size, conjugation map
+
+		# payload = slot x 8 byte (atau slot x 64 bit)
+		return slotBitPlane*8
+
+	def payloadBit(self):
+		return payloadByte*8
 
 
 
@@ -432,7 +438,7 @@ if __name__ == "__main__":
 	start_time = time.time()
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
-	print(bpcs.payload())
+	print('Payload = {} byte'.format(bpcs.payloadByte()))
 	# bpcs.readMsg()
 	# bpcs.setStegoKey(key)
 
