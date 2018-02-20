@@ -420,7 +420,7 @@ class BPCS :
 									else:
 										self.appendConjugateTable(1)
 										self.makeFinalConjugateTable()
-										bitplanes[i]['bitplane'] = self.conjugateTable[-1]
+										bitplanes[i]['bitplane'] = self.conjugateBitplane(self.conjugateTable[-1])
 									conjugateBitplaneIdx+=1
 									hasInsertConjugateTable = True
 						
@@ -584,27 +584,39 @@ class BPCS :
 								print("ekstraksi",idx,i)
 								print('ukuran tabel konjugasi', conjugateBitplaneNumber)
 								hasGetConjugateBitplaneNumber = True
-							elif not hasGetNameFile :
+							elif not hasGetConjugateTable :
 								extracted.append(idx)
-								nameFileBitplanes.append(bitplanes[i]['bitplane'])
+								startConjugateTableIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
+								conjugateTableIdx = 0
+								if conjugateTableIdx < conjugateBitplaneNumber :
+									row = (startConjugateTableIdx+conjugateTableIdx)/8
+									col = (startConjugateTableIdx+conjugateTableIdx)%8
+									print("conjugate")
+									self.conjugateTable.append(bitplanes[i]['bitplane'])
+									conjugateTableIdx+=1
+								else :
+									print('tabel konjugasi')
+									hasGetConjugateTable = True
+							elif not hasGetNameFile :
+								startConjugateTableIdx = 1+1+1								
+								extracted.append(idx)
+								row = (startConjugateTableIdx+nameFileBitplaneIdx)/64
+								col = (startConjugateTableIdx+nameFileBitplaneIdx)%64
+								if(self.conjugateTable[row][col] == 0):
+									nameFileBitplanes.append(bitplanes[i]['bitplane'])
+								else:
+									nameFileBitplanes.append(self.conjugateBitplane(bitplanes[i]['bitplane']))
 								nameFileBitplaneIdx+=1
 								if nameFileBitplaneIdx >= nameFileBitplaneNumber:
 									self.fileMsgName = bitplanesToString(nameFileBitplanes)
 									print('nama msg', self.fileMsgName)
 									hasGetNameFile = True
-							elif not hasGetConjugateTable :
-								extracted.append(idx)
-								startConjugateTableIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
-								conjugateTableIdx = 0
-								while conjugateTableIdx < conjugateBitplaneNumber :
-									self.conjugateTable.append(bitplanes[startConjugateTableIdx+conjugateTableIdx]['bitplane'])
-									conjugateTableIdx+=1
-								print('tabel konjugasi')
-								hasGetConjugateTable = True
 							elif not hasGetMsg :
+								startConjugateTableIdx = 1+1+1+nameFileBitplaneNumber
 								extracted.append(idx)
-								row = msgBitplaneIdx/64
-								col = msgBitplaneIdx%64
+
+								row = (startConjugateTableIdx+msgBitplaneIdx)/64
+								col = (startConjugateTableIdx+msgBitplaneIdx)%64
 								if(self.conjugateTable[row][col] == 0):
 									self.msgBitplanes.append(bitplanes[i])
 								msgBitplaneIdx+=1
