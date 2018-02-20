@@ -369,15 +369,8 @@ class BPCS :
 		arrayOfPosition = []
 		for i in range(1 + 1 + 1 + nameMsgBitplanesLen + msgBitplaneLen):
 			self.appendConjugateTableFunction(conjugateTableTemp,0)
+		self.makeFinalConjugateTableFunction(conjugateTableTemp)
 		conjugateBitplaneLen = len(conjugateTableTemp)
-		idxTemp = 0
-		while idxTemp < conjugateBitplaneLen :
-			conjugateBitplaneLen = len(conjugateTableTemp)
-			conjugateBitplaneNeededTemp = conjugateBitplaneLen - 1 - idxTemp
-			if (len(conjugateTableTemp[-1]) % 64 <= conjugateBitplaneNeededTemp):
-				conjugateBitplaneLen += 1
-			idxTemp+=1
-			self.appendConjugateTableFunction(conjugateTableTemp,1)
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
@@ -576,10 +569,10 @@ class BPCS :
 			i+=1
 
 		# self.convertCGC2PBC(new)
-		arr_splited = self.imagePath.split("\\")
-		print(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]))
+		# arr_splited = self.imagePath.split("\\")
+		# print(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]))
 
-		new.save(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]), self.image.format)
+		# new.save(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]), self.image.format)
 
 	def extracting(self):
 		self.msgBitplanes = []
@@ -628,6 +621,7 @@ class BPCS :
 									msgBitplaneNumber = self.msgLen/8+1
 								arrayOfPosition.append([idx,jdx,i])
 								hasGetMsgBitplaneNumber = True
+								print("size ", self.msgLen)
 								print("Jumlah bitplane pesan", msgBitplaneNumber)
 							elif not hasGetNameFileBitplaneNumber :
 								extracted.append(idx)
@@ -778,27 +772,27 @@ class BPCS :
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	secret_file = raw_input("Secret File: ")
-	# bpcs = BPCS(filename, secret_file)
+	bpcs = BPCS(filename, secret_file)
 	key = raw_input("key: ")
 
-	# start_time = time.time()
-	# bpcs.option(False, True) # (is_cgc, is_random)
-	# bpcs.dividePixels()
-	# bpcs.createBitplanes()
-	# bpcs.readMsg()
-	# bpcs.setStegoKey(key)
+	start_time = time.time()
+	bpcs.option(True, True) # (is_cgc, is_random)
+	bpcs.dividePixels()
+	bpcs.createBitplanes()
+	bpcs.readMsg()
+	bpcs.setStegoKey(key)
 
-	# bpcs.encryptMsg()
-	# bpcs.divideMessage()
-	# bpcs.createMsgBitplane()
-	# bpcs.embedding()
+	bpcs.encryptMsg()
+	bpcs.divideMessage()
+	bpcs.createMsgBitplane()
+	bpcs.embedding()
 
-	# bpcs.createImage()
+	bpcs.createImage()
 
-	# bpcs.writeImage()
+	bpcs.writeImage()
 
-	# print("Embed time")
-	# print("--- %s seconds ---" % (time.time() - start_time))
+	print("Embed time")
+	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
 	extract = BPCS('stego_'+filename, 'mple.txt')
