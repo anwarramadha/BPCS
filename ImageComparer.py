@@ -8,7 +8,7 @@ import time
 # print pixel[0,0] #Get the RGBA Value of the a pixel of an image
 
 global max_diff
-max_diff = 255
+max_diff = 255.0
 
 class ImageComparer :
 	def __init__(self, image1_name, image2_name):
@@ -64,16 +64,16 @@ class ImageComparer :
 
 				i += 1
 
-			return math.pow(totalSelisihKuadrat/size,0.5)
+			return math.pow(total_selisih_kuadrat/size,0.5)
 		else:
 			# image is very different
 			return max_diff
 
 
 	def getPSNR(self):
-		mse = self.getMSE
+		mse = self.getMSE()
 		if (mse!=0):
-			return 20*math.log(max_diff/rms,10)
+			return 20*math.log(max_diff/mse,10)
 		else:
 			return 9999999999999999999999999999999999999999999999
 
@@ -83,7 +83,7 @@ class ImageComparer :
 		if (psnr==9999999999999999999999999999999999999999999999):
 			print("Tidak ada perbedaan image")
 		else:
-			print("Image berbeda dengan PSNR = ".format(psnr))
+			print('Image berbeda dengan PSNR = {}'.format(psnr))
 
 if __name__ == "__main__":
 	# INPUT
@@ -93,10 +93,7 @@ if __name__ == "__main__":
 	# PROSES
 	start_time = time.time()
 	comparer = ImageComparer(filename1, filename2)
-	print(comparer.isImgSameColorType())
-	print(comparer.image1.size)
-	print(comparer.pixel1[629,0])
-	print(comparer.pixel1[0,629])
+	comparer.printPSNR()
 
 	# OUTPUT
 	print("Run time")

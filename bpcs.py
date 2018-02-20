@@ -6,6 +6,7 @@ import io
 import sys
 import extended_vigenere as cipher
 from PIL import Image
+from ImageComparer import ImageComparer
 # import readline
 # readline.parse_and_bind("tab: complete")
 global chessBoard, threshold, maxChange
@@ -428,23 +429,19 @@ class BPCS :
 	def payloadBit(self):
 		return payloadByte*8
 
-class ImageComparer :
-	def __init__(self, image1_name, image2_name):
-		self.image1_name = image1_name
-		self.image2_name = image2_name
-
 
 
 if __name__ == "__main__":
 	# INPUT
 	filename1 = raw_input("Image 1 name: ")
-	filename2 = raw_input("Image 2 name: ")
-	comparer = ImageComparer(filename1, filename2)
+	filename2 = raw_input("Image 2 name: ")	
 	# bpcs = BPCS(filename, 'example.txt')
 	# key = raw_input("key: ")
 
 	# PROSES
 	start_time = time.time()
+	comparer = ImageComparer(filename1, filename2)
+	comparer.printPSNR()
 	# bpcs.dividePixels()
 	# bpcs.createBitplanes()
 	# print('Payload = {} byte'.format(bpcs.payloadByte()))
