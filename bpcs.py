@@ -23,67 +23,68 @@ class BPCS :
 		self.mode = self.image.mode
 		self.blocks = []
 		self.bitPlanes = [] # array of pixel, pixel = array of bitplane, bitplane = array of int (0,1)
+		self.pbcBitplanes = []
 		self.fileMsgName = filename
 		self.numberOfMsgPlane = 0
 		self.msgBlocks = []
 		self.notAllowed = []
 		self.conjugateTable = []
 
-	def convertPBC2CGC(self):
-		self.pbc = self.image.load()
-		width = self.image.size[0]
-		height = self.image.size[1]
-		image = self.create_image(width, height)
-		px = image.load()
-		i = 0
-		while i<height :
-			j = 0
-			while j < width:
-				if j % width == 0:
-					px[i, j] = self.pbc[i, j]
-				else:
-					if isinstance(self.pbc[i, j], int):
-						px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
-					else:
-						tup = []
-						k = 0
-						while k < 3:
-							res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
-							tup.append(res)
-							k+=1
-						px[i, j] = tuple(tup)
-				j+=1
-			i+=1
+	# def convertPBC2CGC(self):
+	# 	self.pbc = self.image.load()
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
+	# 	image = self.create_image(width, height)
+	# 	px = image.load()
+	# 	i = 0
+	# 	while i<height :
+	# 		j = 0
+	# 		while j < width:
+	# 			if j % width == 0:
+	# 				px[i, j] = self.pbc[i, j]
+	# 			else:
+	# 				if isinstance(self.pbc[i, j], int):
+	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
+	# 				else:
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
+	# 			j+=1
+	# 		i+=1
 
-		return image
+	# 	return image
 
-	def convertCGC2PBC(self):
-		self.pbc = self.image.load()
-		width = self.image.size[0]
-		height = self.image.size[1]
-		image = self.create_image(width, height)
-		px = image.load()
-		i = 0
-		while i<height :
-			j = 0
-			while j < width:
-				if j % width == 0:
-					px[i, j] = self.pbc[i, j]
-				else:
-					if isinstance(self.pbc[i, j], int):
-						px[i, j] = self.pbc[i, j] ^ px[i, j-1]
-					else:
-						tup = []
-						k = 0
-						while k < 3:
-							res = self.pbc[i, j][k] ^ px[i, j-1][k]
-							tup.append(res)
-							k+=1
-						px[i, j] = tuple(tup)
-				j+=1
-			i+=1
+	# def convertCGC2PBC(self):
+	# 	self.pbc = self.image.load()
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
+	# 	image = self.create_image(width, height)
+	# 	px = image.load()
+	# 	i = 0
+	# 	while i<height :
+	# 		j = 0
+	# 		while j < width:
+	# 			if j % width == 0:
+	# 				px[i, j] = self.pbc[i, j]
+	# 			else:
+	# 				if isinstance(self.pbc[i, j], int):
+	# 					px[i, j] = self.pbc[i, j] ^ px[i, j-1]
+	# 				else:
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = self.pbc[i, j][k] ^ px[i, j-1][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[i, j] = tuple(tup)
+	# 			j+=1
+	# 		i+=1
 
-		return image
+	# 	return image
 
 	# def convertCGC2PBC(self, image):
 	# 	px = image.load()
@@ -255,6 +256,7 @@ class BPCS :
 				bitplaneForAllColor.append(bitplaneForEachColor)
 			
 				i+=1
+			self.convertPBC2CGC(bitplaneForAllColor)
 			self.bitPlanes.append(bitplaneForAllColor)
 			
 
@@ -572,11 +574,11 @@ class BPCS :
 
 	def createImage(self):
 		idx = 0
-		for block in self.bitPlanes:
+		while idx < len(self.bitPlanes):
 			i = 0
 			rgb = []
-			blockLen = len(block)
-
+			blockLen = len(self.bitPlanes[idx])
+			self.convertCGC2PBC(self.bitPlanes[idx], self.pbcBitplanes[idx])
 			while i < 64:
 				j = 0
 				values = []
@@ -584,7 +586,7 @@ class BPCS :
 					k = 0
 					bit = ''
 					while k < 8:
-						bit += str(block[j][k]['bitplane'][i])
+						bit += str(self.bitPlanes[idx][j][k]['bitplane'][i])
 						k+=1
 					values.append(int(bit, 2))
 					j+=1
@@ -783,19 +785,25 @@ class BPCS :
 	def joinMessage(self):
 		bits = []
 		bit = ''
+		msglen = 725
 		for bitplane in self.msgBitplanes:
 
-			i = 1
 			for b in bitplane:
 				bit += str(b)
-				if i % 8 == 0:
+				if len(bit) == 8:
 					bits.append(bit)
 					bit = ''
-				i+=1
 
 		self.message = ''
 		for bit in bits:
 			self.message += chr(int(bit, 2))
+			if len(self.message) == 725:
+				break
+
+	def createExtractedFile(self):
+		file = open("extracted/"+self.fileMsgName, 'w')
+		file.write(self.message)
+		file.close()
 
 	def payloadByte(self):
 		# self.bitPlanes harus sudah terisi
@@ -818,7 +826,8 @@ class BPCS :
 
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
-	bpcs = BPCS(filename, 'example.txt')
+	secret_file = raw_input("Secret File: ")
+	bpcs = BPCS(filename, secret_file)
 	key = raw_input("key: ")
 
 	start_time = time.time()
@@ -847,6 +856,7 @@ if __name__ == "__main__":
 	bpcs.extracting()
 	bpcs.joinMessage()
 	bpcs.decryptMsg()
-	print(bpcs.message)
+	# print(bpcs.message)
+	bpcs.createExtractedFile()
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
