@@ -6,8 +6,9 @@ import io
 import sys
 import extended_vigenere as cipher
 from PIL import Image
-import readline
-readline.parse_and_bind("tab: complete")
+from ImageComparer import ImageComparer
+# import readline
+# readline.parse_and_bind("tab: complete")
 global chessBoard, threshold, maxChange
 chessBoard = [i % 2 for i in xrange(64)]
 threshold = 0.3
@@ -20,29 +21,59 @@ class BPCS :
 		self.image = Image.open(self.imagePath)
 		self.mode = self.image.mode
 		self.blocks = []
-		self.bitPlanes = []
+		self.bitPlanes = [] # array of pixel, pixel = array of bitplane, bitplane = array of int (0,1)
+		self.pbcBitplanes = []
 		self.fileMsgName = filename
 		self.msgBlocks = []
 		self.notAllowed = []
 
 	# def convertPBC2CGC(self):
 	# 	self.pbc = self.image.load()
-	# 	image = self.create_image(self.width, self.height)
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
+	# 	image = self.create_image(width, height)
 	# 	px = image.load()
 	# 	i = 0
-	# 	while i<self.height :
+	# 	while i<height :
 	# 		j = 0
-	# 		while j < self.width:
-	# 			if j % self.width == 0:
-	# 				px[i, j] = self.pbc[i, j]
+	# 		while j < width:
+	# 			if j % width == 0:
+	# 				px[j, i] = self.pbc[j, i]
 	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
+	# 				if isinstance(self.pbc[j, i], int):
+	# 					px[j, i] = self.pbc[j, i] ^ self.pbc[j-1, i]
 	# 				else:
 	# 					tup = []
 	# 					k = 0
 	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						res = self.pbc[j, i][k] ^ self.pbc[j-1, i][k]
+	# 						tup.append(res)
+	# 						k+=1
+	# 					px[j, i] = tuple(tup)
+	# 			j+=1
+	# 		i+=1
+
+	# 	return image
+
+	# def convertCGC2PBC(self, image):
+	# 	self.pbc = self.image.load()
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
+	# 	px = image.load()
+	# 	i = 0
+	# 	while i<height :
+	# 		j = 0
+	# 		while j < width:
+	# 			if j % width == 0:
+	# 				px[i, j] = self.pbc[i, j]
+	# 			else:
+	# 				if isinstance(self.pbc[i, j], int):
+	# 					px[i, j] = self.pbc[i, j] ^ px[i, j-1]
+	# 				else:
+	# 					tup = []
+	# 					k = 0
+	# 					while k < 3:
+	# 						res = self.pbc[i, j][k] ^ px[i, j-1][k]
 	# 						tup.append(res)
 	# 						k+=1
 	# 					px[i, j] = tuple(tup)
@@ -53,25 +84,63 @@ class BPCS :
 
 	# def convertCGC2PBC(self, image):
 	# 	px = image.load()
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
 	# 	i = 0
-	# 	while i<self.height :
+	# 	while i<height :
 	# 		j = 0
-	# 		while j < self.width:
-	# 			if j % self.width == 0:
-	# 				px[i, j] = self.pbc[i, j]
+	# 		while j < width:
+	# 			if j % width == 0:
+	# 				px[j, i] = px[j, i]
 	# 			else:
-	# 				if isinstance(px[i, j], int):
-	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
+	# 				if isinstance(px[j, i], int):
+	# 					px[j, i] = px[j, i] ^ px[j-1, i]
 	# 				else:
 	# 					tup = []
 	# 					k = 0
 	# 					while k < 3:
-	# 						res = px[i, j][k] ^ self.pbc[i, j-1][k]
+	# 						res = px[j, i][k] ^ px[j-1, i][k]
 	# 						tup.append(res)
 	# 						k+=1
-	# 					px[i, j] = tuple(tup)
+	# 					px[j, i] = tuple(tup)
 	# 			j+=1
 	# 		i+=1
+
+	def convertPBC2CGC(self, bitplanes):
+		self.pbcBitplanes.append(bitplanes)
+		i = 0
+		while i < len(bitplanes): # 1 for greyscale, 3 for rgb
+			j = 0
+			while j < len(bitplanes[i][j]):
+				if j == 0:
+					bitplanes[i][j] = bitplanes[i][j]
+					bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+				else:
+					k = 0
+					while k < 64:
+						bitplanes[i][j]['bitplane'][k] = bitplanes[i][j]['bitplane'][k] ^ bitplanes[i][j-1]['bitplane'][k] 
+						k+=1
+
+					bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+				j+=1
+			i+=1
+
+	def convertCGC2PBC(self, cgcbitplanes, pbcbitplanes):
+		i = 0
+		while i < len(cgcbitplanes): # 1 for greyscale, 3 for rgb
+			j = 0
+			while j < len(cgcbitplanes[i][j]):
+				if j == 0:
+					cgcbitplanes[i][j] = cgcbitplanes[i][j]
+					# bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+				else:
+					k = 0
+					while k < 64:
+						cgcbitplanes[i][j]['bitplane'][k] = cgcbitplanes[i][j]['bitplane'][k] ^ pbcbitplanes[i][j-1]['bitplane'][k] 
+						# bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+						k+=1
+				j+=1
+			i+=1
 
 	def defineBlockSize(self):
 		self.width, self.height = self.image.size
@@ -179,12 +248,13 @@ class BPCS :
 						k += 1
 					j += 1
 
-					bitplane = {'bitplane':bits, 'complexity':self.calculateComplexity(bits)}
+					bitplane = {'bitplane':bits, 'complexity':0}
 					bitplaneForEachColor.append(bitplane)
 
 				bitplaneForAllColor.append(bitplaneForEachColor)
 			
 				i+=1
+			self.convertPBC2CGC(bitplaneForAllColor)
 			self.bitPlanes.append(bitplaneForAllColor)
 			
 
@@ -287,17 +357,18 @@ class BPCS :
 
 			idx += self.seed(keyIdx)
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
-				idx = self.seed(keyIdx)
+				print(idx)
+				idx = 0
 
 
 
 	def createImage(self):
 		idx = 0
-		for block in self.bitPlanes:
+		while idx < len(self.bitPlanes):
 			i = 0
 			rgb = []
-			blockLen = len(block)
-
+			blockLen = len(self.bitPlanes[idx])
+			self.convertCGC2PBC(self.bitPlanes[idx], self.pbcBitplanes[idx])
 			while i < 64:
 				j = 0
 				values = []
@@ -305,7 +376,7 @@ class BPCS :
 					k = 0
 					bit = ''
 					while k < 8:
-						bit += str(block[j][k]['bitplane'][i])
+						bit += str(self.bitPlanes[idx][j][k]['bitplane'][i])
 						k+=1
 					values.append(int(bit, 2))
 					j+=1
@@ -392,7 +463,7 @@ class BPCS :
 
 			idx += self.seed(keyIdx)
 			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
-				idx = self.seed(keyIdx)
+				idx = 0
 
 	def joinMessage(self):
 		bits = []
@@ -410,17 +481,38 @@ class BPCS :
 		self.message = ''
 		for bit in bits:
 			self.message += chr(int(bit, 2))
-		
+
+	def payloadByte(self):
+		# self.bitPlanes harus sudah terisi
+		slotBitPlane = 0
+		for a in self.bitPlanes:
+			for b in a:
+				for c in b:
+					if c['complexity']>threshold:
+						slotBitPlane += 1
+
+		slotBitPlane -= 50 # penyimpanan filename, extension, file size, conjugation map
+
+		# payload = slot x 8 byte (atau slot x 64 bit)
+		return slotBitPlane*8
+
+	def payloadBit(self):
+		return payloadByte*8
+
 
 
 if __name__ == "__main__":
-	filename = raw_input("Image name: ")
+	# INPUT
+	filename = raw_input("Image 1 name: ")
 	bpcs = BPCS(filename, 'example.txt')
+	# bpcs.convertCGC2PBC().save("lenna_double_convert.bmp")
 	key = raw_input("key: ")
 
+	# PROSES
 	start_time = time.time()
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
+	print('Payload = {} byte'.format(bpcs.payloadByte()))
 	bpcs.readMsg()
 	bpcs.setStegoKey(key)
 
@@ -433,7 +525,8 @@ if __name__ == "__main__":
 
 	bpcs.writeImage()	
 
-	print("Embed time")
+	# OUTPUT
+	print("Run time")
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
@@ -447,3 +540,5 @@ if __name__ == "__main__":
 	print(bpcs1.message)
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
+	comparer = ImageComparer(filename, "stego_"+filename)
+	comparer.printPSNR()
