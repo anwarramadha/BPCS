@@ -7,7 +7,26 @@
 	  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <!-- Compiled and minified JavaScript -->
 	  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
-	   <!--Let browser know website is optimized for mobile-->
+		 <!--Let browser know website is optimized for mobile-->
+		 <script>
+			 $(document).ready(function(){
+				function readURL(input) {
+					if (input.files && input.files[0]) {
+						var reader = new FileReader();
+
+						reader.onload = function(e) {
+							$('#original_image').attr('src', e.target.result);
+						}
+						console.log("makan");
+						reader.readAsDataURL(input.files[0]);
+					}
+				}
+
+				$("#myfile").change(function() {
+					readURL(this);
+				});
+			});
+		 </script>
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body>
@@ -33,7 +52,7 @@
 			    <div class="file-field input-field col s6">
 			      <div class="btn">
 			        <span>Upload Image</span>
-			        <input type="file" name="myfile">
+			        <input type="file" name="myfile" id="myfile">
 			      </div>
 			      <div class="file-path-wrapper">
 			        <input class="file-path validate" type="text" placeholder="Upload one Image file">
@@ -80,16 +99,16 @@
 
 			  </form>
 		 </div>
-		 <!-- <div class="row">
+		<div class="row">
 		 	<div class="col s6">
 	        	<div class="card">
 		            <div class="card-image">
-		        		<img class="materialboxed" id="original_image" width="460" src="/media/Capture.PNG">
+		        		<img class="materialboxed" id="original_image" width="460" src="http://www.51allout.co.uk/wp-content/uploads/2012/02/Image-not-found.gif">
 		              <span class="card-title">Original Image</span>
 		            </div>
 	            </div>
-	        </div>
-	     </div> -->
+	    </div>
+	  </div>
 	     <!-- <p>File uploaded at: <a href="/media/static/20000.jpg">here</a></p> -->
 	  <div class="row">
 	  		<div class="col s6 offset-s5">
