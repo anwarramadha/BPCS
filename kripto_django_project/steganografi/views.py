@@ -4,8 +4,8 @@ from django.http import HttpResponse
 from django.views.generic import TemplateView
 from bpcs import BPCS
 import os
-
 from django.conf import settings
+# from django.conf.settings import MEDIA_ROOT
 from django.core.files.storage import FileSystemStorage
 
 def index(request):
@@ -35,10 +35,31 @@ def result(request):
     	convert_cgc = True
 
     # handle FILES
-    myfile = request.FILES['myfile']
+    # handle image
+    image = request.FILES['image_path']
     fs = FileSystemStorage()
-    filename = fs.save(myfile.name, myfile)
-    uploaded_file_url = fs.url(filename)
+    image_name = fs.save(image.name, image)
+    image_url = fs.url(image_name)
 
-    context = {'filename' : filename, 'uploaded_file_url' : uploaded_file_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
+    # handle "soon to be embeded" file
+    file = request.FILES['file_path']
+    fs = FileSystemStorage()
+    file_name = fs.save(file.name, file)
+    file_url = fs.url(file_name)
+
+    bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
+    bpcs.dividePixels()
+    bpcs.createBitplanes()
+    bpcs.readMsg()
+    bpcs.setStegoKey(key)
+    bpcs.encryptMsg()
+    bpcs.divideMessage()
+    bpcs.createMsgBitplane()
+    bpcs.embedding()
+
+    bpcs.createImage()
+
+    bpcs.writeImage()
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
     return HttpResponse(template.render(context,request))

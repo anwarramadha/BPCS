@@ -8,6 +8,9 @@ import os
 import extended_vigenere as cipher
 from PIL import Image
 from ImageComparer import ImageComparer
+import os
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 # import readline
 # readline.parse_and_bind("tab: complete")
 global chessBoard, threshold, maxChange
@@ -636,7 +639,10 @@ class BPCS :
 			i+=1
 
 		# self.convertCGC2PBC(new)
-		new.save('stego_'+self.imagePath, self.image.format)
+		arr_splited = self.imagePath.split("\\")
+		print(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]))
+
+		new.save(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]), self.image.format)
 
 	def extracting(self):
 		self.msgBitplanes = []
@@ -834,7 +840,7 @@ if __name__ == "__main__":
 
 	bpcs.createImage()
 
-	bpcs.writeImage()	
+	bpcs.writeImage()
 
 	print("Embed time")
 	print("--- %s seconds ---" % (time.time() - start_time))

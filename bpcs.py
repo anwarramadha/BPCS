@@ -789,7 +789,7 @@ if __name__ == "__main__":
 
 	bpcs.createImage()
 
-	bpcs.writeImage()	
+	bpcs.writeImage()
 
 	print("Embed time")
 	print("--- %s seconds ---" % (time.time() - start_time))
