@@ -2,11 +2,6 @@ import math
 import numpy
 from PIL import Image
 import time
-# gambar = Image.open("lena512.bmp") #Can be many different formats.
-# pixel = gambar.load()
-# print gambar.size #Get the width and hight of the image for iterating over
-# print pixel[0,0] #Get the RGBA Value of the a pixel of an image
-
 global max_diff
 max_diff = 255.0
 

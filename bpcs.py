@@ -26,39 +26,71 @@ class BPCS :
 		self.msgBlocks = []
 		self.notAllowed = []
 
-	# def convertPBC2CGC(self):
-	# 	self.pbc = self.image.load()
-	# 	image = self.create_image(self.width, self.height)
-	# 	px = image.load()
-	# 	i = 0
-	# 	while i<self.height :
-	# 		j = 0
-	# 		while j < self.width:
-	# 			if j % self.width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
+	def convertPBC2CGC(self):
+		self.pbc = self.image.load()
+		width = self.image.size[0]
+		height = self.image.size[1]
+		image = self.create_image(width, height)
+		px = image.load()
+		i = 0
+		while i<height :
+			j = 0
+			while j < width:
+				if j % width == 0:
+					px[i, j] = self.pbc[i, j]
+				else:
+					if isinstance(self.pbc[i, j], int):
+						px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
+					else:
+						tup = []
+						k = 0
+						while k < 3:
+							res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
+							tup.append(res)
+							k+=1
+						px[i, j] = tuple(tup)
+				j+=1
+			i+=1
 
-	# 	return image
+		return image
+
+	def convertCGC2PBC(self):
+		self.pbc = self.image.load()
+		width = self.image.size[0]
+		height = self.image.size[1]
+		image = self.create_image(width, height)
+		px = image.load()
+		i = 0
+		while i<height :
+			j = 0
+			while j < width:
+				if j % width == 0:
+					px[i, j] = self.pbc[i, j]
+				else:
+					if isinstance(self.pbc[i, j], int):
+						px[i, j] = self.pbc[i, j] ^ px[i, j-1]
+					else:
+						tup = []
+						k = 0
+						while k < 3:
+							res = self.pbc[i, j][k] ^ px[i, j-1][k]
+							tup.append(res)
+							k+=1
+						px[i, j] = tuple(tup)
+				j+=1
+			i+=1
+
+		return image
 
 	# def convertCGC2PBC(self, image):
 	# 	px = image.load()
+	# 	width = self.image.size[0]
+	# 	height = self.image.size[1]
 	# 	i = 0
-	# 	while i<self.height :
+	# 	while i<height :
 	# 		j = 0
-	# 		while j < self.width:
-	# 			if j % self.width == 0:
+	# 		while j < width:
+	# 			if j % width == 0:
 	# 				px[i, j] = self.pbc[i, j]
 	# 			else:
 	# 				if isinstance(px[i, j], int):
@@ -434,8 +466,9 @@ class BPCS :
 if __name__ == "__main__":
 	# INPUT
 	filename1 = raw_input("Image 1 name: ")
-	filename2 = raw_input("Image 2 name: ")	
-	# bpcs = BPCS(filename, 'example.txt')
+	filename2 = raw_input("Image 2 name: ")
+	# bpcs = BPCS("lenna_cgc.bmp", 'example.txt')
+	# bpcs.convertCGC2PBC().save("lenna_double_convert.bmp")
 	# key = raw_input("key: ")
 
 	# PROSES
