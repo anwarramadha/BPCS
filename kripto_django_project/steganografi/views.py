@@ -48,11 +48,16 @@ def result(request):
     file_url = fs.url(file_name)
 
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
+    bpcs.option(convert_cgc, random)
     bpcs.dividePixels()
     bpcs.createBitplanes()
+    # bpcs.setThreshold(threshold)
     bpcs.readMsg()
+
     bpcs.setStegoKey(key)
-    bpcs.encryptMsg()
+
+    if (encrypt):
+        bpcs.encryptMsg()
     bpcs.divideMessage()
     bpcs.createMsgBitplane()
     bpcs.embedding()
@@ -61,5 +66,13 @@ def result(request):
 
     bpcs.writeImage()
 
-    context = {'image_name' : image_name, 'image_url' : image_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
+    stego_name = 'stego_' + image_name
+    stego_url = "/media/" + stego_name
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
     return HttpResponse(template.render(context,request))
+
+def extract(request):
+    module_dir = os.path.dirname(__file__)
+    template = loader.get_template('extract.html')
+    return HttpResponse(template.render({}, request))
