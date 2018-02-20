@@ -132,12 +132,10 @@ class BPCS :
 			while j < len(cgcbitplanes[i][j]):
 				if j == 0:
 					cgcbitplanes[i][j] = cgcbitplanes[i][j]
-					# bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
 				else:
 					k = 0
 					while k < 64:
 						cgcbitplanes[i][j]['bitplane'][k] = cgcbitplanes[i][j]['bitplane'][k] ^ pbcbitplanes[i][j-1]['bitplane'][k] 
-						# bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
 						k+=1
 				j+=1
 			i+=1
