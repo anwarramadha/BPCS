@@ -86,7 +86,7 @@ def extract(request):
     template = loader.get_template('extract.html')
     return HttpResponse(template.render({}, request))
 
-def extract_result(request):
+def getmsg(request):
     module_dir = os.path.dirname(__file__)
     template = loader.get_template('extract_result.html')
     return HttpResponse(template.render({}, request))

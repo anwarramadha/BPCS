@@ -49,11 +49,11 @@
 	  </div>
       <div class="container">
       	<div class="row">
-		      <form action="extract/result">{% csrf_token %}
+		      <form action="getmsg" method="POST" enctype="multipart/form-data">{% csrf_token %}
 			    <div class="file-field input-field col s6">
 			      <div class="btn">
 			        <span>Upload Image</span>
-			        <input type="file" id="myfile" multiple>
+			        <input type="file" id="myfile">
 			      </div>
 			      <div class="file-path-wrapper">
 			        <input class="file-path validate" type="text" placeholder="Upload one or more files">
@@ -81,6 +81,9 @@
       					<label for="convert-cgc">Convert CGC</label>
 		        </div>
 
+		        <div class="waves-effect waves-light btn">
+			        <input type="submit" value="Submit">
+			    </div>
 			  </form>
 		 </div>
 		 <div class="row">
@@ -92,9 +95,6 @@
 		            </div>
 	            </div>
 	        </div>
-		 	<div class="waves-effect waves-light btn">
-		        <input type="submit" value="Submit">
-		    </div>
 	  </div>
 </body>
 </html>
