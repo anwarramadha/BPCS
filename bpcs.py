@@ -29,6 +29,7 @@ class BPCS :
 		self.msgBlocks = []
 		self.notAllowed = []
 		self.conjugateTable = []
+		self.msgLen = 0
 
 	# def convertPBC2CGC(self):
 	# 	self.pbc = self.image.load()
@@ -276,12 +277,13 @@ class BPCS :
 			return self.msglen + (8 - self.msglen % 8) + 1
 
 	def readMsg(self):
-		numberOfBit =  os.stat(self.fileMsgName).st_size*8
+		self.msgLen = os.stat(self.fileMsgName).st_size
+		numberOfBit =  self.msgLen*8
 		modular64OfNumber = numberOfBit%64
 		if(modular64OfNumber == 0):
-			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64
+			self.numberOfMsgPlane = self.msgLen/8
 		else:
-			self.numberOfMsgPlane = os.stat(self.fileMsgName).st_size/64+1
+			self.numberOfMsgPlane = self.msgLen/8+1
 		file = open(self.fileMsgName, 'r')
 		self.message = file.read()
 		file.close()
@@ -421,8 +423,6 @@ class BPCS :
 		hasInsertConjugateBitplaneLen = False
 		hasInsertConjugateConjugateTableTable = False
 		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
-		print("name asli", nameMsgBitplanes)
-		print("hasil name asli", self.bitplanesToString(nameMsgBitplanes))
 		nameMsgBitplanesLen = len(nameMsgBitplanes)
 		nameMsgBitplaneIdx = 0
 		conjugateBitplaneIdx = 0
@@ -453,7 +453,7 @@ class BPCS :
 						
 						if bitplanes[i]['complexity'] > threshold :
 							if not hasInsertmsgBitplaneLen :
-								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(msgBitplaneLen)
+								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(self.msgLen)
 								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
@@ -678,7 +678,13 @@ class BPCS :
 						if bitplanes[i]['complexity'] > threshold:
 							if not hasGetMsgBitplaneNumber :
 								extracted.append(idx)
-								msgBitplaneNumber = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
+								self.msgLen = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
+								numberOfBit =  self.msgLen*8
+								modular64OfNumber = numberOfBit%64
+								if(modular64OfNumber == 0):
+									msgBitplaneNumber = self.msgLen/8
+								else:
+									msgBitplaneNumber = self.msgLen/8+1
 								arrayOfPosition.append([idx,jdx,i])
 								hasGetMsgBitplaneNumber = True
 								print("Jumlah bitplane pesan", msgBitplaneNumber)
@@ -849,14 +855,14 @@ if __name__ == "__main__":
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
-	bpcs = BPCS('stego_'+filename, 'example.txt')
+	bpcs = BPCS('stego_'+filename, 'mple.txt')
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
 	bpcs.setStegoKey(key)
 	bpcs.extracting()
 	bpcs.joinMessage()
 	bpcs.decryptMsg()
-	# print(bpcs.message)
+	print(bpcs.message)
 	bpcs.createExtractedFile()
 	print("Extract time")
 	print("--- %s seconds ---" % (time.time() - start_time))
