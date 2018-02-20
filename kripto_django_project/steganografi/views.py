@@ -17,7 +17,7 @@ def index_jelek(request):
 def result(request):
     # print(restaurantRatingSystem.main_sentiment)
     # print(restaurantRatingSystem.find_rating('KFC'))
-    template = loader.get_template('result.html')
+    template = loader.get_template('result_new.html')
     image_path = request.POST.get('image_path', '')
     file_path = request.POST.get('file_path', '')
     key = request.POST.get('key', '')
@@ -30,7 +30,7 @@ def result(request):
     	random = True
     convert_cgc = False
     if request.method == 'POST' and 'convert_cgc' in request.POST:
-    	convert_cgc = request.POST.get('convert_cgc', '')
+    	convert_cgc = True
 
     context = {'image_path' : image_path, 'file_path' : file_path, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
     return HttpResponse(template.render(context,request))

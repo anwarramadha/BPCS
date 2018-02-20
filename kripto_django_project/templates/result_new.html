@@ -30,39 +30,29 @@
       <div class="container">
       	<div class="row">
 		      <form action="result" method="POST">{% csrf_token %}
-			    <div class="file-field input-field col s6">
-			      <div class="btn">
-			        <span>Upload Image</span>
-			        <input type="file" name="filepath" multiple>
-			      </div>
-			      <div class="file-path-wrapper">
-			        <input class="file-path validate" type="text" placeholder="Upload one or more files">
-			      </div>
-			    </div>
-
+			    
 		          <div class="input-field col s3">
-		            <input id="key" type="password" data-length="10" name="key">
+		            <input id="key" type="password" data-length="10" name="key" value="{{key}}">
 		            <label for="input_text">Key</label>
 		          </div>
 		          <div class="input-field col s3">
-		            <input id="threshold" type="text" data-length="10" name="threshold">
+		            <input id="threshold" type="text" data-length="10" name="threshold" value="{{threshold}}">
 		            <label for="threshold">Threshold (0,1 - 0,99)</label>
 		          </div>
 
 		        <div class="col s3">
-		        	 <input type="checkbox" id="encrypt" name="encrypt">
+		        	 <input type="checkbox" id="encrypt" name="encrypt" {% if encrypt %} checked {% endif %}>
       					<label for="encrypt">Encrypt</label>
-
 		        </div>
 
 		        <div class="col s3">
-		        	 <input type="checkbox" id="random" name="random">
+		        	 <input type="checkbox" id="random" name="random" {% if random %} checked {% endif %}>
       					<label for="random">Random</label>
 		        </div>
 
 		        <div class="col s3">
-		        	 <input type="checkbox" id="convert-cgc" name="convert-cgc">
-      					<label for="convert-cgc">Convert CGC</label>
+		        	 <input type="checkbox" id="convert_cgc" name="convert_cgc" {% if convert_cgc %} checked {% endif %}>
+      					<label for="convert_cgc">Convert CGC</label>
 		        </div>
 
 		        <div class="waves-effect waves-light btn">
@@ -71,7 +61,7 @@
 
 			  </form>
 		 </div>
-		 <!-- <div class="row">
+		 <div class="row">
 		 	<div class="col s6">
 	        	<div class="card">
 		            <div class="card-image">
@@ -88,11 +78,11 @@
 	            </div>
 	        </div>
 	        
-		 </div> -->
+		 </div>
 	  </div>
 	  <div class="row">
 	  		<div class="col s6 offset-s5">
-	        	<!-- <h4 class="grey-text text-lighten-1" id="psnr">PSNR: 0.99</h4> -->
+	        	<h4 class="grey-text text-lighten-1" id="psnr">PSNR: 0.99</h4>
 
 	        </div>
 	  </div>
