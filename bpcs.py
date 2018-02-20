@@ -621,6 +621,7 @@ class BPCS :
 									msgBitplaneNumber = self.msgLen/8+1
 								arrayOfPosition.append([idx,jdx,i])
 								hasGetMsgBitplaneNumber = True
+								print("size ", self.msgLen)
 								print("Jumlah bitplane pesan", msgBitplaneNumber)
 							elif not hasGetNameFileBitplaneNumber :
 								extracted.append(idx)
