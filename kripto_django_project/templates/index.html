@@ -29,11 +29,11 @@
 	  </div>
       <div class="container">
       	<div class="row">
-		      <form action="result" method="POST">{% csrf_token %}
+		      <form action="result" method="POST" enctype="multipart/form-data">{% csrf_token %}
 			    <div class="file-field input-field col s6">
 			      <div class="btn">
 			        <span>Upload Image</span>
-			        <input type="file" name="image_path">
+			        <input type="file" name="myfile">
 			      </div>
 			      <div class="file-path-wrapper">
 			        <input class="file-path validate" type="text" placeholder="Upload one Image file">
@@ -80,25 +80,16 @@
 
 			  </form>
 		 </div>
-		 <!-- <div class="row">
+		 <div class="row">
 		 	<div class="col s6">
 	        	<div class="card">
 		            <div class="card-image">
-		        		<img class="materialboxed" id="original_image" width="460" src="../tiger.bmp">
+		        		<img class="materialboxed" id="original_image" width="460" src="/media/Capture.PNG">
 		              <span class="card-title">Original Image</span>
 		            </div>
 	            </div>
 	        </div>
-	        <div class="col s6">
-	        	<div class="card">
-	            <div class="card-image">
-	        		<img class="materialboxed" id="stego_image" width="460" src="../tiger.bmp">
-	              <span class="card-title">Stego Image</span>
-	            </div>
-	        </div>
-	        
-		 </div> -->
-	  </div>
+	     </div>
 	  <div class="row">
 	  		<div class="col s6 offset-s5">
 	        	<!-- <h4 class="grey-text text-lighten-1" id="psnr">PSNR: 0.99</h4> -->
