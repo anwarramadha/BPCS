@@ -680,6 +680,7 @@ class BPCS :
 									msgBitplaneNumber = self.msgLen/8+1
 								arrayOfPosition.append([idx,jdx,i])
 								hasGetMsgBitplaneNumber = True
+								print("size ", self.msgLen)
 								print("Jumlah bitplane pesan", msgBitplaneNumber)
 							elif not hasGetNameFileBitplaneNumber :
 								extracted.append(idx)
@@ -784,7 +785,6 @@ class BPCS :
 	def joinMessage(self):
 		bits = []
 		bit = ''
-		msglen = 725
 		for bitplane in self.msgBitplanes:
 
 			for b in bitplane:
@@ -796,7 +796,7 @@ class BPCS :
 		self.message = ''
 		for bit in bits:
 			self.message += chr(int(bit, 2))
-			if len(self.message) == 725:
+			if len(self.message) == self.msgLen:
 				break
 
 	def createExtractedFile(self):
