@@ -34,22 +34,41 @@ class ImageComparer :
 	def getMSE(self):
 		if self.isImgSameSize() and self.isImgSameColorType():
 			# proses
-			return 0
+			width = self.image1.size[0] # image1 or image2 does not matter
+			height = self.image1.size[1] # image1 or image2 does not matter
+			size = width*height
+			# check color
+			if isinstance(self.pixel1[0,0],int):
+				grayscale = True
+			else:
+				grayscale = False
+				size *= 3 # RGB, jadi ada 3
+
+			total_selisih_kuadrat = 0.0
+			i = 0
+			while i < width:
+				j = 0
+				while j < height:
+					if grayscale:
+						selisih = self.pixel1[i,j] - self.pixel2[i,j]
+						total_selisih_kuadrat += math.pow(selisih,2)
+					else: # RGB
+						k = 0
+						while k < 3:
+							selisih = self.pixel1[i,j][k] - self.pixel2[i,j][k]
+							total_selisih_kuadrat += math.pow(selisih,2)
+
+							k += 1
+
+					j += 1
+
+				i += 1
+
+			return math.pow(totalSelisihKuadrat/size,0.5)
 		else:
 			# image is very different
 			return max_diff
 
-# 	# img1 and img2 have to be matrix and must have the same the exact same size
-# 	def getMSE(img1, img2):
-# 		row = len(img1)
-# 		column = len(img1[0])
-# 		size = row*column
-# 		totalSelisihKuadrat = 0.0
-# 		for i in range(row):
-# 			for j in range(column):
-# 				selisih = img1[i][j]-img2[i][j]
-# 				totalSelisihKuadrat += math.pow(selisih,2)
-# 		return math.pow(totalSelisihKuadrat/size,0.5)
 
 	def getPSNR(self):
 		mse = self.getMSE
@@ -75,8 +94,9 @@ if __name__ == "__main__":
 	start_time = time.time()
 	comparer = ImageComparer(filename1, filename2)
 	print(comparer.isImgSameColorType())
-	print(comparer.image1.size[0])
-	print(comparer.pixel2[0,0])
+	print(comparer.image1.size)
+	print(comparer.pixel1[629,0])
+	print(comparer.pixel1[0,629])
 
 	# OUTPUT
 	print("Run time")
