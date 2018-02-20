@@ -20,7 +20,7 @@ class BPCS :
 		self.image = Image.open(self.imagePath)
 		self.mode = self.image.mode
 		self.blocks = []
-		self.bitPlanes = []
+		self.bitPlanes = [] # array of pixel, pixel = array of bitplane, bitplane = array of int (0,1)
 		self.fileMsgName = filename
 		self.msgBlocks = []
 		self.notAllowed = []
@@ -410,40 +410,52 @@ class BPCS :
 		self.message = ''
 		for bit in bits:
 			self.message += chr(int(bit, 2))
-		
+
+	def payload(self):
+		# self.bitPlanes harus sudah terisi
+		count = 0
+		for a in self.bitPlanes:
+			for b in a:
+				for c in b:
+					if c['complexity']>threshold:
+						count += 1
+
+		return count
+
 
 
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
-	key = raw_input("key: ")
+	# key = raw_input("key: ")
 
 	start_time = time.time()
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
-	bpcs.readMsg()
-	bpcs.setStegoKey(key)
+	print(bpcs.payload())
+	# bpcs.readMsg()
+	# bpcs.setStegoKey(key)
 
-	bpcs.encryptMsg()
-	bpcs.divideMessage()
-	bpcs.createMsgBitplane()
-	bpcs.embedding()
+	# bpcs.encryptMsg()
+	# bpcs.divideMessage()
+	# bpcs.createMsgBitplane()
+	# bpcs.embedding()
 
-	bpcs.createImage()
+	# bpcs.createImage()
 
-	bpcs.writeImage()	
+	# bpcs.writeImage()	
 
-	print("Embed time")
+	print("Run time")
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
-	start_time = time.time()
-	bpcs1 = BPCS('stego_'+filename, 'example.txt')
-	bpcs1.dividePixels()
-	bpcs1.createBitplanes()
-	bpcs1.setStegoKey(key)
-	bpcs1.extracting()
-	bpcs1.joinMessage()
-	bpcs1.decryptMsg()
-	print(bpcs1.message)
-	print("Extract time")
-	print("--- %s seconds ---" % (time.time() - start_time))
+	# start_time = time.time()
+	# bpcs1 = BPCS('stego_'+filename, 'example.txt')
+	# bpcs1.dividePixels()
+	# bpcs1.createBitplanes()
+	# bpcs1.setStegoKey(key)
+	# bpcs1.extracting()
+	# bpcs1.joinMessage()
+	# bpcs1.decryptMsg()
+	# print(bpcs1.message)
+	# print("Extract time")
+	# print("--- %s seconds ---" % (time.time() - start_time))
