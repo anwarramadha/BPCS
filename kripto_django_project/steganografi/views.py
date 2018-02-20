@@ -44,7 +44,7 @@ def result(request):
     # handle "soon to be embeded" file
     file = request.FILES['file_path']
     fs = FileSystemStorage()
-    file_name = fs.save(image.name, image)
+    file_name = fs.save(file.name, file)
     file_url = fs.url(file_name)
 
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
