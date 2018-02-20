@@ -230,14 +230,14 @@ class BPCS :
 			i+=1
 		return bitplane
 
-	#Untuk nama file (Ascii 8 bit)
+	#Untuk nama file (Ascii 16 bit)
 	def intToBitplane(self,number):
 		bitplane = []
 		t = {'0':[0,0,0],'1':[0,0,1],'2':[0,1,0],'3':[0,1,1],'4':[1,0,0],'5':[1,0,1] ,'6':[1,1,0],'7':[1,1,1]}
 		for c in oct(int(number))[1:]:
 			bitplane+=t[c]
-		remainder = 8 - len(bitplane)%8
-		if (remainder != 0):
+		remainder = 16 - len(bitplane)%16
+		if (remainder != 16):
 			for i in range(remainder):
 				bitplane = [0]+bitplane
 		return bitplane
@@ -249,7 +249,7 @@ class BPCS :
 		for c in oct(int(number))[1:]:
 			bitplane+=t[c]
 		remainder = 64 - len(bitplane)%64
-		if (remainder != 0):
+		if (remainder != 64):
 			for i in range(remainder):
 				bitplane = [0]+bitplane
 		return bitplane
@@ -263,13 +263,19 @@ class BPCS :
 	def stringToBitplanes(self, string):
 		bitplanes = []
 		bitplane = []
-		length = 0
+		bitplane += self.intToBitplane(len(string))
+		length = 1
 		for char in string:
 			bitplane += self.intToBitplane(ord(char))
 			length+=1
-			if(length == 8):
+			if(length == 4):
 				bitplanes.append(bitplane)
+				bitplane=[]
 				length=0
+		if(length != 0):
+			for i in range((4-length)*16):
+				bitplane.append(0)
+			bitplanes.append(bitplane)
 		return bitplanes
 
 	def bitplanesToString(self, bitplanes):
@@ -277,16 +283,26 @@ class BPCS :
 		char = ''
 		length = 0
 		bitOfChar = ''
+		lengthOfString = 0
 		for bitplane in bitplanes:
 			for bit in bitplane:
 				bitOfChar += str(bit)
 				length += 1
-				if(length == 8):
-					char = unichr(int(bitOfChar,2))
-					string += char
-					char = ''
-					bitOfChar = ''
-					length = 0
+				if(length == 16):
+					if(lengthOfString==0):
+						lengthOfString = int(bitOfChar,2)
+						bitOfChar = ''
+						length = 0
+					else :
+						char = chr(int(bitOfChar,2))
+						string += char
+						char = ''
+						bitOfChar = ''
+						length = 0
+						if(len(string)==lengthOfString):
+							break
+			if(len(string)==lengthOfString):
+				break
 		return string
 	
 	def createMsgBitplane(self):
@@ -324,6 +340,8 @@ class BPCS :
 		hasInsertConjugateBitplaneLen = False
 		hasInsertConjugateConjugateTableTable = False
 		nameMsgBitplanes = self.stringToBitplanes(self.fileMsgName)
+		print("name asli", nameMsgBitplanes)
+		print("hasil name asli", self.bitplanesToString(nameMsgBitplanes))
 		nameMsgBitplanesLen = len(nameMsgBitplanes)
 		nameMsgBitplaneIdx = 0
 		conjugateBitplaneIdx = 0
@@ -442,7 +460,7 @@ class BPCS :
 			idx += self.seed(keyIdx)
 			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
 				idx = self.seed(keyIdx)
-		print(arrayOfPosition)
+		#print(arrayOfPosition)
 
 	#Model tabel berupa bitplanes
 	def appendConjugateTable(self, bit):
@@ -618,7 +636,7 @@ class BPCS :
 			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
 				idx = self.seed(keyIdx)
 		idx=0
-		print("posisi",arrayOfPosition)
+		#print("posisi",arrayOfPosition)
 		while (idx < len(arrayOfPosition)):
 			if not hasGetConjugateConjugateTableTable :
 				startIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber + conjugateBitplaneNumber
@@ -660,6 +678,7 @@ class BPCS :
 					nameFileBitplanes.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
 				nameFileBitplaneIdx+=1
 				if nameFileBitplaneIdx >= nameFileBitplaneNumber:
+					print("name bitplane", nameFileBitplanes)
 					self.fileMsgName = self.bitplanesToString(nameFileBitplanes)
 					print('nama msg', self.fileMsgName)
 					hasGetNameFile = True
@@ -704,6 +723,8 @@ if __name__ == "__main__":
 	
 	filename = raw_input("Image name: ")
 	bpcs = BPCS(filename, 'example.txt')
+	makan = bpcs.stringToBitplanes('example.txt')
+	print("biplane",bpcs.bitplanesToString(makan))	
 	key = raw_input("key: ")
 
 	start_time = time.time()
