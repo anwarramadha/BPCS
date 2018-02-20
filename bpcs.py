@@ -109,6 +109,40 @@ class BPCS :
 	# 			j+=1
 	# 		i+=1
 
+	def convertPBC2CGC(self, bitplanes):
+		self.pbcBitplanes.append(bitplanes)
+		i = 0
+		while i < len(bitplanes): # 1 for greyscale, 3 for rgb
+			j = 0
+			while j < len(bitplanes[i][j]):
+				if j == 0:
+					bitplanes[i][j] = bitplanes[i][j]
+					bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+				else:
+					k = 0
+					while k < 64:
+						bitplanes[i][j]['bitplane'][k] = bitplanes[i][j]['bitplane'][k] ^ bitplanes[i][j-1]['bitplane'][k] 
+						k+=1
+
+					bitplanes[i][j]['complexity'] = self.calculateComplexity(bitplanes[i][j]['bitplane'])
+				j+=1
+			i+=1
+
+	def convertCGC2PBC(self, cgcbitplanes, pbcbitplanes):
+		i = 0
+		while i < len(cgcbitplanes): # 1 for greyscale, 3 for rgb
+			j = 0
+			while j < len(cgcbitplanes[i][j]):
+				if j == 0:
+					cgcbitplanes[i][j] = cgcbitplanes[i][j]
+				else:
+					k = 0
+					while k < 64:
+						cgcbitplanes[i][j]['bitplane'][k] = cgcbitplanes[i][j]['bitplane'][k] ^ pbcbitplanes[i][j-1]['bitplane'][k] 
+						k+=1
+				j+=1
+			i+=1
+
 	def defineBlockSize(self):
 		self.width, self.height = self.image.size
 		return (self.width / 8 + int(self.width % 8 > 0)) * (self.height / 8 + int(self.height % 8 > 0)) 
@@ -783,44 +817,36 @@ class BPCS :
 
 
 if __name__ == "__main__":
-	# INPUT
-	filename1 = raw_input("Image 1 name: ")
-	filename2 = raw_input("Image 2 name: ")
-	# bpcs = BPCS("lenna_cgc.bmp", 'example.txt')
-	# bpcs.convertCGC2PBC().save("lenna_double_convert.bmp")
-	# key = raw_input("key: ")
+	filename = raw_input("Image name: ")
+	bpcs = BPCS(filename, 'example.txt')
+	key = raw_input("key: ")
 
-	# PROSES
 	start_time = time.time()
-	comparer = ImageComparer(filename1, filename2)
-	comparer.printPSNR()
-	# bpcs.dividePixels()
-	# bpcs.createBitplanes()
-	# print('Payload = {} byte'.format(bpcs.payloadByte()))
-	# bpcs.readMsg()
-	# bpcs.setStegoKey(key)
+	bpcs.dividePixels()
+	bpcs.createBitplanes()
+	bpcs.readMsg()
+	bpcs.setStegoKey(key)
 
-	# bpcs.encryptMsg()
-	# bpcs.divideMessage()
-	# bpcs.createMsgBitplane()
-	# bpcs.embedding()
+	bpcs.encryptMsg()
+	bpcs.divideMessage()
+	bpcs.createMsgBitplane()
+	bpcs.embedding()
 
-	# bpcs.createImage()
+	bpcs.createImage()
 
-	# bpcs.writeImage()	
+	bpcs.writeImage()	
 
-	# OUTPUT
-	print("Run time")
+	print("Embed time")
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
-	# start_time = time.time()
-	# bpcs1 = BPCS('stego_'+filename, 'example.txt')
-	# bpcs1.dividePixels()
-	# bpcs1.createBitplanes()
-	# bpcs1.setStegoKey(key)
-	# bpcs1.extracting()
-	# bpcs1.joinMessage()
-	# bpcs1.decryptMsg()
-	# print(bpcs1.message)
-	# print("Extract time")
-	# print("--- %s seconds ---" % (time.time() - start_time))
+	start_time = time.time()
+	bpcs = BPCS('stego_'+filename, 'example.txt')
+	bpcs.dividePixels()
+	bpcs.createBitplanes()
+	bpcs.setStegoKey(key)
+	bpcs.extracting()
+	bpcs.joinMessage()
+	bpcs.decryptMsg()
+	print(bpcs.message)
+	print("Extract time")
+	print("--- %s seconds ---" % (time.time() - start_time))
