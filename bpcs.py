@@ -778,27 +778,27 @@ class BPCS :
 if __name__ == "__main__":
 	filename = raw_input("Image name: ")
 	secret_file = raw_input("Secret File: ")
-	bpcs = BPCS(filename, secret_file)
+	# bpcs = BPCS(filename, secret_file)
 	key = raw_input("key: ")
 
-	start_time = time.time()
-	bpcs.option(False, True) # (is_cgc, is_random)
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.readMsg()
-	bpcs.setStegoKey(key)
+	# start_time = time.time()
+	# bpcs.option(False, True) # (is_cgc, is_random)
+	# bpcs.dividePixels()
+	# bpcs.createBitplanes()
+	# bpcs.readMsg()
+	# bpcs.setStegoKey(key)
 
-	bpcs.encryptMsg()
-	bpcs.divideMessage()
-	bpcs.createMsgBitplane()
-	bpcs.embedding()
+	# bpcs.encryptMsg()
+	# bpcs.divideMessage()
+	# bpcs.createMsgBitplane()
+	# bpcs.embedding()
 
-	bpcs.createImage()
+	# bpcs.createImage()
 
-	bpcs.writeImage()
+	# bpcs.writeImage()
 
-	print("Embed time")
-	print("--- %s seconds ---" % (time.time() - start_time))
+	# print("Embed time")
+	# print("--- %s seconds ---" % (time.time() - start_time))
 	
 	start_time = time.time()
 	extract = BPCS('stego_'+filename, 'mple.txt')

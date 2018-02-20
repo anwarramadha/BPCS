@@ -773,6 +773,10 @@ class BPCS :
 		self.random = is_random
 		self.cgc = is_cgc
 
+	def setThreshold(self, new_thres):
+		global threshold
+		threshold = new_thres
+
 
 
 if __name__ == "__main__":
@@ -785,6 +789,7 @@ if __name__ == "__main__":
 	bpcs.option(False, True) # (is_cgc, is_random)
 	bpcs.dividePixels()
 	bpcs.createBitplanes()
+	# bpcs.setThreshold(threshold)
 	bpcs.readMsg()
 	bpcs.setStegoKey(key)
 

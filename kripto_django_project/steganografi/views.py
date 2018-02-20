@@ -48,11 +48,16 @@ def result(request):
     file_url = fs.url(file_name)
 
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
+    bpcs.option(convert_cgc, random)
     bpcs.dividePixels()
     bpcs.createBitplanes()
+    # bpcs.setThreshold(threshold)
     bpcs.readMsg()
+
     bpcs.setStegoKey(key)
-    bpcs.encryptMsg()
+
+    if (encrypt):
+        bpcs.encryptMsg()
     bpcs.divideMessage()
     bpcs.createMsgBitplane()
     bpcs.embedding()
