@@ -228,6 +228,7 @@ class BPCS :
 		while i < len(bitplane):
 			bitplane[i] ^= chessBoard[i]
 			i+=1
+		return bitplane
 
 	#Untuk nama file (Ascii 8 bit)
 	def intToBitplane(self,number):
@@ -421,7 +422,6 @@ class BPCS :
 										self.makeFinalConjugateTable()
 										bitplanes[i]['bitplane'] = self.conjugateTable[-1]
 									conjugateBitplaneIdx+=1
-								elif (conjugateBitplaneIdx >= conjugateBitplaneLen):
 									hasInsertConjugateTable = True
 						
 						if hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable:
@@ -568,19 +568,19 @@ class BPCS :
 						if bitplanes[i]['complexity'] > threshold:
 							if not hasGetMsgBitplaneNumber :
 								extracted.append(idx)
-								msgBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								msgBitplaneNumber = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
 								print("ekstraksi",idx,i)
 								print('ukuran msg', msgBitplaneNumber)
 								hasGetMsgBitplaneNumber = True
 							elif not hasGetNameFileBitplaneNumber :
 								extracted.append(idx)
-								nameFileBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								nameFileBitplaneNumber = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
 								print("ekstraksi",idx,i)
 								print('ukuran nama file', nameFileBitplaneNumber)
 								hasGetNameFileBitplaneNumber = True
 							elif not hasGetConjugateBitplaneNumber :
 								extracted.append(idx)
-								conjugateBitplaneNumber = self.bitplaneToInt(bitplanes[i]['bitplane'])
+								conjugateBitplaneNumber = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
 								print("ekstraksi",idx,i)
 								print('ukuran tabel konjugasi', conjugateBitplaneNumber)
 								hasGetConjugateBitplaneNumber = True
