@@ -772,17 +772,7 @@ class BPCS :
 					if c['complexity']>threshold:
 						slotBitPlane += 1
 
-<<<<<<< HEAD
 		slotBitPlane -= 50 # penyimpanan filename, extension, file size, conjugation map
-=======
-if __name__ == "__main__":
-	
-	filename = raw_input("Image name: ")
-	bpcs = BPCS(filename, 'example.txt')
-	makan = bpcs.stringToBitplanes('example.txt')
-	print("biplane",bpcs.bitplanesToString(makan))	
-	key = raw_input("key: ")
->>>>>>> ekstraksi
 
 		# payload = slot x 8 byte (atau slot x 64 bit)
 		return slotBitPlane*8
@@ -823,7 +813,6 @@ if __name__ == "__main__":
 	print("Run time")
 	print("--- %s seconds ---" % (time.time() - start_time))
 	
-<<<<<<< HEAD
 	# start_time = time.time()
 	# bpcs1 = BPCS('stego_'+filename, 'example.txt')
 	# bpcs1.dividePixels()
@@ -835,16 +824,3 @@ if __name__ == "__main__":
 	# print(bpcs1.message)
 	# print("Extract time")
 	# print("--- %s seconds ---" % (time.time() - start_time))
-=======
-	start_time = time.time()
-	bpcs = BPCS('stego_'+filename, 'saya.txt')
-	bpcs.dividePixels()
-	bpcs.createBitplanes()
-	bpcs.setStegoKey(key)
-	bpcs.extracting()
-	bpcs.joinMessage()
-	bpcs.decryptMsg()
-	print(bpcs.message)
-	print("Extract time")
-	print("--- %s seconds ---" % (time.time() - start_time))
->>>>>>> ekstraksi
