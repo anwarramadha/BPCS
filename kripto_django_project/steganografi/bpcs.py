@@ -639,8 +639,10 @@ class BPCS :
 			i+=1
 
 		# self.convertCGC2PBC(new)
-		
-		new.save(os.path.join(settings.MEDIA_ROOT, 'stego_'+self.imagePath, self.image.format))
+		arr_splited = self.imagePath.split("\\")
+		print(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]))
+
+		new.save(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]), self.image.format)
 
 	def extracting(self):
 		self.msgBitplanes = []
