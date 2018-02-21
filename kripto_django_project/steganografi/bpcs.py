@@ -576,7 +576,7 @@ class BPCS :
 			i+=1
 
 		# self.convertCGC2PBC(new)
-		arr_splited = self.imagePath.split("\\")
+		arr_splited = self.imagePath.split("/")
 		print(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]))
 
 		new.save(os.path.join(settings.MEDIA_ROOT, 'stego_' + arr_splited[-1]), self.image.format)
@@ -748,7 +748,7 @@ class BPCS :
 				break
 
 	def createExtractedFile(self):
-		file = open("extracted/"+self.fileMsgName, 'w')
+		file = open(os.path.join(settings.MEDIA_ROOT, self.fileMsgName), 'w')
 		file.write(self.message)
 		file.close()
 

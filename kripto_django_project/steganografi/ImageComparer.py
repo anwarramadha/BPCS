@@ -70,7 +70,7 @@ class ImageComparer :
 		if (mse!=0):
 			return 20*math.log(max_diff/mse,10)
 		else:
-			return 9999999999999999999999999999999999999999999999
+			return 0
 
 
 	def printPSNR(self):

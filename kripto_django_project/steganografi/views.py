@@ -54,7 +54,6 @@ def result(request):
     bpcs.createBitplanes()
     # bpcs.setThreshold(threshold)
     bpcs.readMsg()
-
     bpcs.setStegoKey(key)
 
     if (encrypt):
@@ -70,15 +69,11 @@ def result(request):
     stego_name = 'stego_' + image_name
     stego_url = "/media/" + stego_name
 
-    # PSNR
-    filename1 = os.path.join(settings.MEDIA_ROOT, image_name)
-    filename2 = os.path.join(settings.MEDIA_ROOT, stego_name)
-    comparer = ImageComparer(filename1, filename2)
-    psnr = comparer.getPSNR()
+    ic = ImageComparer(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, stego_name))
+    psnr = '{0:.3g}'.format(ic.getPSNR())
 
-    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name,
-        'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random,
-        'convert_cgc' : convert_cgc, 'psnr' : psnr}
+    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 
+    'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc, 'psnr':psnr}
     return HttpResponse(template.render(context,request))
 
 def extract(request):
@@ -88,5 +83,40 @@ def extract(request):
 
 def getmsg(request):
     module_dir = os.path.dirname(__file__)
-    template = loader.get_template('getmsg.html')
-    return HttpResponse(template.render({}, request))
+    template = loader.get_template('extract_result.html')
+    key = request.POST.get('key', '')
+    threshold = request.POST.get('threshold', '')
+    encrypt = False
+    if request.method == 'POST' and 'encrypt' in request.POST:
+        encrypt = True
+    random = False
+    if request.method == 'POST' and 'random' in request.POST:
+        random = True
+    convert_cgc = False
+    if request.method == 'POST' and 'convert_cgc' in request.POST:
+        convert_cgc = True
+    image = request.FILES['image_path']
+    fs = FileSystemStorage()
+    image_name = fs.save(image.name, image)
+    image_url = fs.url(image_name)
+
+    bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), '')
+    bpcs.option(convert_cgc, random)
+    bpcs.dividePixels()
+    bpcs.createBitplanes()
+    bpcs.setStegoKey(key)
+    bpcs.extracting()
+    bpcs.joinMessage()
+    if (encrypt):
+        bpcs.decryptMsg()
+    bpcs.createExtractedFile()
+    download(bpcs.fileMsgName)
+
+def download(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+            return response
+    raise Http404
