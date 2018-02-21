@@ -7,5 +7,6 @@ urlpatterns = [
     url('old', views.index_jelek, name='index_jelek'),
     url('result', views.result, name='result'),
     url('extract', views.extract, name='extract'),
-    url('getmsg', views.getmsg, name='getmsg'),
+    url('payload', views.payload, name='payload'),
+    url('count', views.count, name='count'),
 ]
