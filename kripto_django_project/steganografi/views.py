@@ -68,7 +68,7 @@ def result(request):
 
     stego_name = 'stego_' + image_name
     stego_url = "/media/" + stego_name
-
+    
     ic = ImageComparer(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, stego_name))
     psnr = '{0:.3g}'.format(ic.getPSNR())
 
@@ -79,4 +79,9 @@ def result(request):
 def extract(request):
     module_dir = os.path.dirname(__file__)
     template = loader.get_template('extract.html')
+    return HttpResponse(template.render({}, request))
+
+def getmsg(request):
+    module_dir = os.path.dirname(__file__)
+    template = loader.get_template('extract_result.html')
     return HttpResponse(template.render({}, request))
