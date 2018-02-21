@@ -748,7 +748,7 @@ class BPCS :
 				break
 
 	def createExtractedFile(self):
-		file = open("extracted/"+self.fileMsgName, 'w')
+		file = open(os.path.join(settings.MEDIA_ROOT, self.fileMsgName), 'w')
 		file.write(self.message)
 		file.close()
 
