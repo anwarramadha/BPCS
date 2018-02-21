@@ -3,6 +3,7 @@ from django.template import loader
 from django.http import HttpResponse
 from django.views.generic import TemplateView
 from bpcs import BPCS
+from ImageComparer import ImageComparer
 import os
 from django.conf import settings
 # from django.conf.settings import MEDIA_ROOT
@@ -53,7 +54,6 @@ def result(request):
     bpcs.createBitplanes()
     # bpcs.setThreshold(threshold)
     bpcs.readMsg()
-
     bpcs.setStegoKey(key)
 
     if (encrypt):
@@ -69,7 +69,11 @@ def result(request):
     stego_name = 'stego_' + image_name
     stego_url = "/media/" + stego_name
 
-    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc}
+    ic = ImageComparer(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, stego_name))
+    psnr = '{0:.3g}'.format(ic.getPSNR())
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'stego_name' : stego_name, 'stego_url' : stego_url, 
+    'key' : key, 'threshold' : threshold, 'encrypt' : encrypt, 'random' : random, 'convert_cgc' : convert_cgc, 'psnr':psnr}
     return HttpResponse(template.render(context,request))
 
 def extract(request):
