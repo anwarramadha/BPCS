@@ -88,5 +88,5 @@ def extract(request):
 
 def getmsg(request):
     module_dir = os.path.dirname(__file__)
-    template = loader.get_template('extract_result.html')
+    template = loader.get_template('getmsg.html')
     return HttpResponse(template.render({}, request))
