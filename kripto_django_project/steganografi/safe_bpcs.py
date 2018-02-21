@@ -35,86 +35,6 @@ class BPCS :
 		self.msgLen = 0
 		self.threshold = 0.3
 
-	# def convertPBC2CGC(self):
-	# 	self.pbc = self.image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	image = self.create_image(width, height)
-	# 	px = image.load()
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ self.pbc[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ self.pbc[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
-	# 	return image
-
-	# def convertCGC2PBC(self):
-	# 	self.pbc = self.image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	image = self.create_image(width, height)
-	# 	px = image.load()
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(self.pbc[i, j], int):
-	# 					px[i, j] = self.pbc[i, j] ^ px[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = self.pbc[i, j][k] ^ px[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
-	# 	return image
-
-	# def convertCGC2PBC(self, image):
-	# 	px = image.load()
-	# 	width = self.image.size[0]
-	# 	height = self.image.size[1]
-	# 	i = 0
-	# 	while i<height :
-	# 		j = 0
-	# 		while j < width:
-	# 			if j % width == 0:
-	# 				px[i, j] = self.pbc[i, j]
-	# 			else:
-	# 				if isinstance(px[i, j], int):
-	# 					px[i, j] = px[i, j] ^ self.pbc[i, j-1]
-	# 				else:
-	# 					tup = []
-	# 					k = 0
-	# 					while k < 3:
-	# 						res = px[i, j][k] ^ self.pbc[i, j-1][k]
-	# 						tup.append(res)
-	# 						k+=1
-	# 					px[i, j] = tuple(tup)
-	# 			j+=1
-	# 		i+=1
-
 	def convertPBC2CGC(self, bitplanes):
 		self.pbcBitplanes.append(bitplanes)
 		i = 0
@@ -900,7 +820,8 @@ class BPCS :
 
 	def setThreshold(self, new_thres):
 		if new_thres != '' :
-			self.threshold = new_thres
+			print(new_thres)
+			self.threshold = float(new_thres)
 
 
 

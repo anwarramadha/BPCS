@@ -8,8 +8,6 @@ import os
 from django.conf import settings
 # from django.conf.settings import MEDIA_ROOT
 from django.core.files.storage import FileSystemStorage
-from django.http import Http404
-from kripto_django_project.celeryapp import app
 
 CONTENT_TYPES = ['png', 'bmp']
 
@@ -23,7 +21,6 @@ def index_jelek(request):
     template = loader.get_template('index_jelek.html')
     return HttpResponse(template.render({}, request))
 
-@app.task
 def result(request):
     # print(restaurantRatingSystem.main_sentiment)
     # print(restaurantRatingSystem.find_rating('KFC'))
@@ -31,7 +28,6 @@ def result(request):
     error = loader.get_template('error.html')
 
     key = request.POST.get('key', '')
-    threshold = request.POST.get('threshold', '')
     threshold = request.POST.get('threshold', '')
     encrypt = False
     if request.method == 'POST' and 'encrypt' in request.POST:
@@ -101,7 +97,6 @@ def extract(request):
     template = loader.get_template('extract.html')
     return HttpResponse(template.render({}, request))
 
-@app.task
 def getmsg(request):
     module_dir = os.path.dirname(__file__)
     # template = loader.get_template('extract_result.html')
@@ -123,6 +118,7 @@ def getmsg(request):
     image_url = fs.url(image_name)
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), '')
     bpcs.option(convert_cgc, random)
+    bpcs.setThreshold(threshold)
     bpcs.dividePixels()
     bpcs.createBitplanes()
     bpcs.setStegoKey(key)
