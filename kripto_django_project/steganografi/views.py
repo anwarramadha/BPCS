@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse
 from django.views.generic import TemplateView
-from bpcs import BPCS
+from safe_bpcs import BPCS
 from ImageComparer import ImageComparer
 import os
 from django.conf import settings
@@ -83,7 +83,7 @@ def extract(request):
 
 def getmsg(request):
     module_dir = os.path.dirname(__file__)
-    template = loader.get_template('extract_result.html')
+    # template = loader.get_template('extract_result.html')
     key = request.POST.get('key', '')
     threshold = request.POST.get('threshold', '')
     encrypt = False
@@ -99,18 +99,28 @@ def getmsg(request):
     fs = FileSystemStorage()
     image_name = fs.save(image.name, image)
     image_url = fs.url(image_name)
-
+    print(image_name)
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), '')
     bpcs.option(convert_cgc, random)
     bpcs.dividePixels()
     bpcs.createBitplanes()
     bpcs.setStegoKey(key)
+    print("wow1")
     bpcs.extracting()
+    print("wow2")
     bpcs.joinMessage()
     if (encrypt):
         bpcs.decryptMsg()
     bpcs.createExtractedFile()
-    download(bpcs.fileMsgName)
+    print("wow")
+    return download(request, bpcs.fileMsgName)
+    # file_path = os.path.join(settings.MEDIA_ROOT, bpcs.fileMsgName)
+    # if os.path.exists(file_path):
+    #     with open(file_path, 'rb') as fh:
+    #         response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+    #         response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+    #         return response
+    # raise Http404
 
 def download(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
