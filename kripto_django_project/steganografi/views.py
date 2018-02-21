@@ -130,3 +130,8 @@ def download(request, path):
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
     raise Http404
+
+def payload(request):
+    module_dir = os.path.dirname(__file__)
+    template = loader.get_template('payload.html')
+    return HttpResponse(template.render({}, request))
