@@ -572,7 +572,11 @@ class BPCS :
 				else:
 					idx = 0
 				isReturn = True
-		#print(arrayOfPosition)
+		if not (hasInsertmsgBitplaneLen and hasInsertNameMsgBitplanesLen and hasInsertConjugateBitplaneLen 
+			and hasInsertNameMsg and hasInsertMsg and hasInsertConjugateTable and hasInsertConjugateConjugateTableTable):
+			return False
+
+		return True
 
 	#Model tabel berupa bitplanes
 	def appendConjugateTable(self, bit):
@@ -777,71 +781,78 @@ class BPCS :
 					idx = 0
 				isReturn = True
 
-		idx=0
-		#print("posisi",arrayOfPosition)
-		while (idx < len(arrayOfPosition)):
-			if not hasGetConjugateConjugateTableTable :
-				startIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber + conjugateBitplaneNumber
-				if (conjugateConjugateTableTableIdx < conjugateBitplaneNumber):
-					row = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][0]
-					col = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][1]
-					zoz = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][2]
-					conjugateConjugateTableTable.append(self.bitplaneToInt(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane'])))
-				else:
-					print('tabel konjugasi untuk tabel konjugasi')
-					print(conjugateConjugateTableTable)
-					hasGetConjugateConjugateTableTable = True
-				conjugateConjugateTableTableIdx+=1
-			elif not hasGetConjugateTable :
-				startIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
-				if conjugateTableIdx < conjugateBitplaneNumber :
-					row = arrayOfPosition[startIdx+conjugateTableIdx][0]
-					col = arrayOfPosition[startIdx+conjugateTableIdx][1]
-					zoz = arrayOfPosition[startIdx+conjugateTableIdx][2]
-					if(conjugateConjugateTableTable[conjugateTableIdx]==0):
-						self.conjugateTable.append(self.bitPlanes[row][col][zoz]['bitplane'])
-					else:
-						self.conjugateTable.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
-				else :
-					print('tabel konjugasi')
-					print(self.conjugateTable)
-					hasGetConjugateTable = True
-				conjugateTableIdx+=1
-			elif not hasGetNameFile :
-				startIdx = 1+1+1								
-				rowCon = (startIdx+nameFileBitplaneIdx)/64
-				colCon = (startIdx+nameFileBitplaneIdx)%64
-				row = arrayOfPosition[startIdx+nameFileBitplaneIdx][0]
-				col = arrayOfPosition[startIdx+nameFileBitplaneIdx][1]
-				zoz = arrayOfPosition[startIdx+nameFileBitplaneIdx][2]
-				if(self.conjugateTable[rowCon][colCon] == 0):
-					nameFileBitplanes.append(self.bitPlanes[row][col][zoz]['bitplane'])
-				else:
-					nameFileBitplanes.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
-				nameFileBitplaneIdx+=1
-				if nameFileBitplaneIdx >= nameFileBitplaneNumber:
-					print("name bitplane", nameFileBitplanes)
-					self.fileMsgName = self.bitplanesToString(nameFileBitplanes)
-					print('nama msg', self.fileMsgName)
-					hasGetNameFile = True
-			elif not hasGetMsg :
-				startIdx = 1+1+1+nameFileBitplaneNumber
-				rowCon = (startIdx+msgBitplaneIdx)/64
-				colCon = (startIdx+msgBitplaneIdx)%64
-				row = arrayOfPosition[startIdx+msgBitplaneIdx][0]
-				col = arrayOfPosition[startIdx+msgBitplaneIdx][1]
-				zoz = arrayOfPosition[startIdx+msgBitplaneIdx][2]
-				if(self.conjugateTable[rowCon][colCon] == 0):
-					self.msgBitplanes.append(self.bitPlanes[row][col][zoz]['bitplane'])
-				else:
-					self.msgBitplanes.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
-				msgBitplaneIdx+=1
-				if msgBitplaneIdx >= msgBitplaneNumber:
-					print('pesan selesai')
-					hasGetMsg=True
+		if not (hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetPosition):
+			return False
 
-			idx+=1
-		return True
+		try:
+			idx=0
+			#print("posisi",arrayOfPosition)
+			while (idx < len(arrayOfPosition)):
+				if not hasGetConjugateConjugateTableTable :
+					startIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber + conjugateBitplaneNumber
+					if (conjugateConjugateTableTableIdx < conjugateBitplaneNumber):
+						row = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][0]
+						col = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][1]
+						zoz = arrayOfPosition[startIdx+conjugateConjugateTableTableIdx][2]
+						conjugateConjugateTableTable.append(self.bitplaneToInt(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane'])))
+					else:
+						print('tabel konjugasi untuk tabel konjugasi')
+						print(conjugateConjugateTableTable)
+						hasGetConjugateConjugateTableTable = True
+					conjugateConjugateTableTableIdx+=1
+				elif not hasGetConjugateTable :
+					startIdx = 1 + 1 + 1 + nameFileBitplaneNumber + msgBitplaneNumber
+					if conjugateTableIdx < conjugateBitplaneNumber :
+						row = arrayOfPosition[startIdx+conjugateTableIdx][0]
+						col = arrayOfPosition[startIdx+conjugateTableIdx][1]
+						zoz = arrayOfPosition[startIdx+conjugateTableIdx][2]
+						if(conjugateConjugateTableTable[conjugateTableIdx]==0):
+							self.conjugateTable.append(self.bitPlanes[row][col][zoz]['bitplane'])
+						else:
+							self.conjugateTable.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
+					else :
+						print('tabel konjugasi')
+						print(self.conjugateTable)
+						hasGetConjugateTable = True
+					conjugateTableIdx+=1
+				elif not hasGetNameFile :
+					startIdx = 1+1+1								
+					rowCon = (startIdx+nameFileBitplaneIdx)/64
+					colCon = (startIdx+nameFileBitplaneIdx)%64
+					row = arrayOfPosition[startIdx+nameFileBitplaneIdx][0]
+					col = arrayOfPosition[startIdx+nameFileBitplaneIdx][1]
+					zoz = arrayOfPosition[startIdx+nameFileBitplaneIdx][2]
+					if(self.conjugateTable[rowCon][colCon] == 0):
+						nameFileBitplanes.append(self.bitPlanes[row][col][zoz]['bitplane'])
+					else:
+						nameFileBitplanes.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
+					nameFileBitplaneIdx+=1
+					if nameFileBitplaneIdx >= nameFileBitplaneNumber:
+						print("name bitplane", nameFileBitplanes)
+						self.fileMsgName = self.bitplanesToString(nameFileBitplanes)
+						print('nama msg', self.fileMsgName)
+						hasGetNameFile = True
+				elif not hasGetMsg :
+					startIdx = 1+1+1+nameFileBitplaneNumber
+					rowCon = (startIdx+msgBitplaneIdx)/64
+					colCon = (startIdx+msgBitplaneIdx)%64
+					row = arrayOfPosition[startIdx+msgBitplaneIdx][0]
+					col = arrayOfPosition[startIdx+msgBitplaneIdx][1]
+					zoz = arrayOfPosition[startIdx+msgBitplaneIdx][2]
+					if(self.conjugateTable[rowCon][colCon] == 0):
+						self.msgBitplanes.append(self.bitPlanes[row][col][zoz]['bitplane'])
+					else:
+						self.msgBitplanes.append(self.conjugateBitplane(self.bitPlanes[row][col][zoz]['bitplane']))
+					msgBitplaneIdx+=1
+					if msgBitplaneIdx >= msgBitplaneNumber:
+						print('pesan selesai')
+						hasGetMsg=True
+
+				idx+=1
+			return True
+		except Exception as e:
+			return False
+		
 
 	def joinMessage(self):
 		bits = []

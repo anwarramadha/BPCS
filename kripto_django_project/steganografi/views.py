@@ -9,6 +9,9 @@ from django.conf import settings
 # from django.conf.settings import MEDIA_ROOT
 from django.core.files.storage import FileSystemStorage
 from django.http import Http404
+from kripto_django_project.celeryapp import app
+
+CONTENT_TYPES = ['png', 'bmp']
 
 def index(request):
     module_dir = os.path.dirname(__file__)
@@ -20,10 +23,13 @@ def index_jelek(request):
     template = loader.get_template('index_jelek.html')
     return HttpResponse(template.render({}, request))
 
+@app.task
 def result(request):
     # print(restaurantRatingSystem.main_sentiment)
     # print(restaurantRatingSystem.find_rating('KFC'))
     template = loader.get_template('result_new.html')
+    error = loader.get_template('error.html')
+
     key = request.POST.get('key', '')
     threshold = request.POST.get('threshold', '')
     threshold = request.POST.get('threshold', '')
@@ -40,6 +46,11 @@ def result(request):
     # handle FILES
     # handle image
     image = request.FILES['image_path']
+    content_type = image.content_type.split('/')[1]
+    if content_type not in CONTENT_TYPES:
+        context = {'message': 'file or image type not supported.'}
+        return HttpResponse(error.render(context, request))
+
     fs = FileSystemStorage()
     image_name = fs.save(image.name, image)
     image_url = fs.url(image_name)
@@ -49,25 +60,31 @@ def result(request):
     fs = FileSystemStorage()
     file_name = fs.save(file.name, file)
     file_url = fs.url(file_name)
+    try:
+        bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
+        bpcs.option(convert_cgc, random)
+        bpcs.setThreshold(threshold)
+        bpcs.dividePixels()
+        bpcs.createBitplanes()
+        # bpcs.setThreshold(threshold)
+        bpcs.readMsg()
+        bpcs.setStegoKey(key)
 
-    bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
-    bpcs.option(convert_cgc, random)
-    bpcs.setThreshold(threshold)
-    bpcs.dividePixels()
-    bpcs.createBitplanes()
-    # bpcs.setThreshold(threshold)
-    bpcs.readMsg()
-    bpcs.setStegoKey(key)
+        if (encrypt):
+            bpcs.encryptMsg()
+        bpcs.divideMessage()
+        bpcs.createMsgBitplane()
+        if not bpcs.embedding():
+            context = {'message': 'message size bigger than cover image.'}
+            return HttpResponse(error.render(context, request))
 
-    if (encrypt):
-        bpcs.encryptMsg()
-    bpcs.divideMessage()
-    bpcs.createMsgBitplane()
-    bpcs.embedding()
+        bpcs.createImage()
 
-    bpcs.createImage()
+        bpcs.writeImage()
 
-    bpcs.writeImage()
+    except Exception as e:
+        context = {'message': 'message size bigger than cover image.'}
+        return HttpResponse(error.render(context, request))
 
     stego_name = 'stego_' + image_name
     stego_url = "/media/" + stego_name
@@ -84,9 +101,11 @@ def extract(request):
     template = loader.get_template('extract.html')
     return HttpResponse(template.render({}, request))
 
+@app.task
 def getmsg(request):
     module_dir = os.path.dirname(__file__)
     # template = loader.get_template('extract_result.html')
+    error = loader.get_template('error.html')
     key = request.POST.get('key', '')
     threshold = request.POST.get('threshold', '')
     encrypt = False
@@ -108,7 +127,8 @@ def getmsg(request):
     bpcs.createBitplanes()
     bpcs.setStegoKey(key)
     if not bpcs.extracting():
-        raise Http404
+        context = {'message':'message not contain any message.'}
+        return HttpResponse(error.render(context, request))
     bpcs.joinMessage()
     if (encrypt):
         bpcs.decryptMsg()
