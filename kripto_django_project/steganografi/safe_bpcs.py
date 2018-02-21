@@ -14,9 +14,8 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 # import readline
 # readline.parse_and_bind("tab: complete")
-global chessBoard, threshold, maxChange
+global chessBoard, maxChange
 chessBoard = [i % 2 for i in xrange(64)]
-threshold = 0.3
 maxChange = 112
 
 class BPCS :
@@ -34,6 +33,7 @@ class BPCS :
 		self.notAllowed = []
 		self.conjugateTable = []
 		self.msgLen = 0
+		self.threshold = 0.3
 
 	# def convertPBC2CGC(self):
 	# 	self.pbc = self.image.load()
@@ -411,18 +411,31 @@ class BPCS :
 			bitplane = {'bitplane':bitplanebits, 'complexity':self.calculateComplexity(bitplanebits)}
 			self.msgBitplanes.append(bitplane)
 
-	def seed(self, idx):
-		if self.random:
-			if len(self.key) == 0:
-				return cipher.extended_ascii.index('a') % 10
-			return cipher.extended_ascii.index(self.key[idx]) % 10
-		else:
-			return 1
+	def seed(self):
+		sumC = 0
+		for c in self.key:
+			sumC += cipher.extended_ascii.index(c)
+
+		if sumC % 2 == 0:
+			return True
+		return False
+		# if self.random:
+		# 	if len(self.key) == 0:
+		# 		return cipher.extended_ascii.index('a') % 10
+		# 	return cipher.extended_ascii.index(self.key[idx]) % 10
+		# else:
+		# 	return 1
 
 	def embedding(self):
 		# pass
 		msgBitplaneIdx = 0
-		idx = self.seed(0)
+		isEven = self.seed()
+
+		if isEven:
+			idx = 0
+		else:
+			idx = 1
+
 		keyLen = len(self.key)
 		keyIdx = 0
 		replaced = []
@@ -449,6 +462,7 @@ class BPCS :
 			self.appendConjugateTableFunction(conjugateTableTemp,0)
 		self.makeFinalConjugateTableFunction(conjugateTableTemp)
 		conjugateBitplaneLen = len(conjugateTableTemp)
+		isReturn = False
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in replaced:
@@ -457,10 +471,10 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 						
-						if bitplanes[i]['complexity'] > threshold :
+						if bitplanes[i]['complexity'] > self.threshold :
 							if not hasInsertmsgBitplaneLen :
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(self.msgLen)
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
 								else:
@@ -470,7 +484,7 @@ class BPCS :
 								arrayOfPosition.append([idx,jdx,i])
 							elif not hasInsertNameMsgBitplanesLen :
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(nameMsgBitplanesLen)
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
 								else:
@@ -480,7 +494,7 @@ class BPCS :
 								arrayOfPosition.append([idx,jdx,i])
 							elif not hasInsertConjugateBitplaneLen :
 								bitplanes[i]['bitplane'] = self.intToBitplaneExpanded(conjugateBitplaneLen)
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
 								else:
@@ -490,7 +504,7 @@ class BPCS :
 								arrayOfPosition.append([idx,jdx,i])
 							elif not hasInsertNameMsg :
 								bitplanes[i]['bitplane'] = nameMsgBitplanes[nameMsgBitplaneIdx]
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
 								else:
@@ -501,7 +515,7 @@ class BPCS :
 									hasInsertNameMsg = True
 							elif not hasInsertMsg :
 								bitplanes[i]['bitplane'] = self.msgBitplanes[msgBitplaneIdx]['bitplane']
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									self.appendConjugateTable(1)
 								else:
@@ -513,7 +527,7 @@ class BPCS :
 									self.makeFinalConjugateTable()
 							elif not hasInsertConjugateTable :
 								bitplanes[i]['bitplane'] = self.conjugateTable[conjugateBitplaneIdx]
-								if(self.calculateComplexity(bitplanes[i]['bitplane']) < threshold):
+								if(self.calculateComplexity(bitplanes[i]['bitplane']) < self.threshold):
 									bitplanes[i]['bitplane'] = self.conjugateBitplane(bitplanes[i]['bitplane'])
 									conjugateConjugateTableTable.append(1)
 								else:
@@ -544,9 +558,20 @@ class BPCS :
 			if keyIdx == keyLen:
 				keyIdx = 0
 
-			idx += self.seed(keyIdx)
-			if idx >= bitplaneLen and len(replaced) < len(self.msgBitplanes):
-				idx = 0
+			if self.random:
+				idx += 2
+			else:
+				idx += 1
+
+			if idx >= bitplaneLen and self.random:
+				if isReturn:
+					break
+
+				if isEven:
+					idx = 1
+				else:
+					idx = 0
+				isReturn = True
 		#print(arrayOfPosition)
 
 	#Model tabel berupa bitplanes
@@ -652,7 +677,11 @@ class BPCS :
 
 	def extracting(self):
 		self.msgBitplanes = []
-		idx = self.seed(0)
+		isEven = self.seed()
+		if isEven:
+			idx = 0
+		else:
+			idx = 1
 		arrayOfPosition = []
 		keyLen = len(self.key)
 		keyIdx = 0
@@ -677,6 +706,7 @@ class BPCS :
 		conjugateTableIdx = 0
 		
 		bitplaneLen = len(self.bitPlanes)
+		isReturn = False
 
 		while idx < bitplaneLen:
 			if idx not in self.notAllowed and idx not in extracted:
@@ -685,7 +715,7 @@ class BPCS :
 					i = 0
 					while i < len(bitplanes): 
 						
-						if bitplanes[i]['complexity'] > threshold:
+						if bitplanes[i]['complexity'] > self.threshold:
 							if not hasGetMsgBitplaneNumber :
 								extracted.append(idx)
 								self.msgLen = self.bitplaneToInt(self.conjugateBitplane(bitplanes[i]['bitplane']))
@@ -727,13 +757,25 @@ class BPCS :
 
 			if hasGetMsgBitplaneNumber and hasGetNameFileBitplaneNumber and hasGetConjugateBitplaneNumber and hasGetPosition:
 				break
+
 			keyIdx += 1
 			if keyIdx == keyLen:
 				keyIdx = 0
 
-			idx += self.seed(keyIdx)
-			if idx >= len(self.bitPlanes) and len(extracted) < msgBitplaneNumber:
-				idx = 0
+			if self.random:
+				idx += 2
+			else:
+				idx += 1
+
+			if idx >= len(self.bitPlanes) and self.random:
+				if isReturn:
+					break
+
+				if isEven:
+					idx = 1
+				else:
+					idx = 0
+				isReturn = True
 
 		idx=0
 		#print("posisi",arrayOfPosition)
@@ -799,6 +841,7 @@ class BPCS :
 					hasGetMsg=True
 
 			idx+=1
+		return True
 
 	def joinMessage(self):
 		bits = []
@@ -828,7 +871,7 @@ class BPCS :
 		for a in self.bitPlanes:
 			for b in a:
 				for c in b:
-					if c['complexity']>threshold:
+					if c['complexity']>self.threshold:
 						slotBitPlane += 1
 
 		slotBitPlane -= 50 # penyimpanan filename, extension, file size, conjugation map
@@ -845,8 +888,8 @@ class BPCS :
 		self.cgc = is_cgc
 
 	def setThreshold(self, new_thres):
-		global threshold
-		threshold = new_thres
+		if new_thres != '' :
+			self.threshold = new_thres
 
 
 

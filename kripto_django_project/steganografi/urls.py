@@ -9,4 +9,5 @@ urlpatterns = [
     url('extract', views.extract, name='extract'),
     url('payload', views.payload, name='payload'),
     url('count', views.count, name='count'),
+    url('getmsg', views.getmsg, name='getmsg')
 ]

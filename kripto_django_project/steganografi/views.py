@@ -8,6 +8,7 @@ import os
 from django.conf import settings
 # from django.conf.settings import MEDIA_ROOT
 from django.core.files.storage import FileSystemStorage
+from django.http import Http404
 
 def index(request):
     module_dir = os.path.dirname(__file__)
@@ -24,6 +25,7 @@ def result(request):
     # print(restaurantRatingSystem.find_rating('KFC'))
     template = loader.get_template('result_new.html')
     key = request.POST.get('key', '')
+    threshold = request.POST.get('threshold', '')
     threshold = request.POST.get('threshold', '')
     encrypt = False
     if request.method == 'POST' and 'encrypt' in request.POST:
@@ -50,6 +52,7 @@ def result(request):
 
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, file_name))
     bpcs.option(convert_cgc, random)
+    bpcs.setThreshold(threshold)
     bpcs.dividePixels()
     bpcs.createBitplanes()
     # bpcs.setThreshold(threshold)
@@ -99,28 +102,18 @@ def getmsg(request):
     fs = FileSystemStorage()
     image_name = fs.save(image.name, image)
     image_url = fs.url(image_name)
-    print(image_name)
     bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), '')
     bpcs.option(convert_cgc, random)
     bpcs.dividePixels()
     bpcs.createBitplanes()
     bpcs.setStegoKey(key)
-    print("wow1")
-    bpcs.extracting()
-    print("wow2")
+    if not bpcs.extracting():
+        raise Http404
     bpcs.joinMessage()
     if (encrypt):
         bpcs.decryptMsg()
     bpcs.createExtractedFile()
-    print("wow")
     return download(request, bpcs.fileMsgName)
-    # file_path = os.path.join(settings.MEDIA_ROOT, bpcs.fileMsgName)
-    # if os.path.exists(file_path):
-    #     with open(file_path, 'rb') as fh:
-    #         response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
-    #         response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
-    #         return response
-    # raise Http404
 
 def download(request, path):
     file_path = os.path.join(settings.MEDIA_ROOT, path)
