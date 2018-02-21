@@ -135,3 +135,31 @@ def payload(request):
     module_dir = os.path.dirname(__file__)
     template = loader.get_template('payload.html')
     return HttpResponse(template.render({}, request))
+
+def count(request):
+    module_dir = os.path.dirname(__file__)
+    template = loader.get_template('payload.html')
+
+    # handle input
+    threshold = request.POST.get('threshold', '')
+    convert_cgc = False
+    if request.method == 'POST' and 'convert_cgc' in request.POST:
+        convert_cgc = True
+
+    # handle FILES
+    # handle image
+    image = request.FILES['image_path']
+    fs = FileSystemStorage()
+    image_name = fs.save(image.name, image)
+    image_url = fs.url(image_name)
+    bpcs = BPCS(os.path.join(settings.MEDIA_ROOT, image_name), os.path.join(settings.MEDIA_ROOT, image_name))
+    bpcs.option(convert_cgc, True)
+    bpcs.dividePixels()
+    bpcs.createBitplanes()
+    payload = bpcs.payloadByte()
+
+
+    context = {'image_name' : image_name, 'image_url' : image_url, 'threshold' : threshold,
+    'convert_cgc' : convert_cgc, 'payload' : payload}
+
+    return HttpResponse(template.render(context, request))

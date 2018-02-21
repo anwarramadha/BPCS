@@ -48,7 +48,7 @@
 	  </div>
       <div class="container">
       	<div class="row">
-		      <form action="result" method="POST" enctype="multipart/form-data">{% csrf_token %}
+		      <form action="count" method="POST" enctype="multipart/form-data">{% csrf_token %}
 			    <div class="file-field input-field col s6">
 			      <div class="btn">
 			        <span>Upload Image</span>
@@ -60,12 +60,12 @@
 			    </div>
 
 		          <div class="input-field col s3">
-		            <input id="threshold" type="text" data-length="10" name="threshold">
+		            <input id="threshold" type="text" data-length="10" name="threshold" {% if threshold != None %} value="{{threshold}}" {% endif %}>
 		            <label for="threshold">Threshold (0,1 - 0,99)</label>
 		          </div>
 
 		        <div class="col s3">
-		        	 <input type="checkbox" id="convert_cgc" name="convert_cgc">
+		        	 <input type="checkbox" id="convert_cgc" name="convert_cgc" {% if convert_cgc %} checked {% endif %}>
       					<label for="convert_cgc">Convert CGC</label>
 		        </div>
 
@@ -88,9 +88,11 @@
 	     <!-- <p>File uploaded at: <a href="/media/static/20000.jpg">here</a></p> -->
 	  <div class="row">
 	  		<div class="col s6 offset-s5">
-	        	<!-- <h4 class="grey-text text-lighten-1" id="psnr">PSNR: 0.99</h4> -->
-
+	  			{% if payload != None %}
+	        	<h4 class="grey-text text-lighten-1" id="psnr">File Hide Capacity: {{payload}} byte</h4>
+	        	{% endif %}
 	        </div>
 	  </div>
+
 </body>
 </html>
